@@ -1,294 +1,237 @@
 package com.track.presentation.home
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.Product
+import com.track.domain.models.User
+import com.track.domain.models.UserRole
+import com.track.presentation.auth.AuthViewModel
 import com.track.presentation.customer.CustomerViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToCart: () -> Unit,
-    onNavigateToProduct: (String) -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToMyOrders: () -> Unit,
     viewModel: CustomerViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = hiltViewModel(),
 ) {
     val products by viewModel.products.collectAsState()
-    val cartCount by remember { derivedStateOf { viewModel.cartCount } }
+    val isLoading by viewModel.isLoading.collectAsState()
+    val cartCount = viewModel.cartCount
+    val currentUser by authViewModel.currentUser.collectAsState()
 
     Scaffold(
-        bottomBar = {
-            HomeBottomNavigation(
+        topBar = {
+            HomeTopBar(
+                currentUser = currentUser,
                 cartCount = cartCount,
-                onCartClick = onNavigateToCart,
-                onAccountClick = onNavigateToLogin
+                onNavigateToCart = onNavigateToCart,
+                onNavigateToLogin = onNavigateToLogin,
+                onNavigateToMyOrders = onNavigateToMyOrders
             )
-        }
+        },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Color.White)
-        ) {
-            HomeHeader()
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                item(span = { GridItemSpan(2) }) {
-                    HomeHeroBanner()
-                }
-
-                item(span = { GridItemSpan(2) }) {
-                    CategoryTabs()
-                }
-
-                item(span = { GridItemSpan(2) }) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                "Premium Printers",
-                                style = MaterialTheme.typography.headlineSmall,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                "Elite performance for professionals",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Color.Gray
-                            )
-                        }
-                        TextButton(onClick = {}) {
-                            Text("View all", color = Color.Black)
-                        }
-                    }
-                }
-
-                items(products) { product ->
-                    StoreProductCard(
-                        product = product,
-                        onProductClick = { onNavigateToProduct(product.id) }
-                    )
-                }
-            }
-        }
+        HomeContent(
+            padding = padding,
+            isLoading = isLoading,
+            products = products,
+            onAddToCart = { viewModel.addToCart(it) }
+        )
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeHeader() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.End
-    ) {
-        IconButton(onClick = {}) {
-            Icon(Icons.Default.Search, contentDescription = "Search", modifier = Modifier.size(28.dp))
-        }
-    }
-}
-
-@Composable
-fun HomeHeroBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(220.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color.Black)
-    ) {
-        // Text Content
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Bottom
-        ) {
+private fun HomeTopBar(
+    currentUser: User?,
+    cartCount: Int,
+    onNavigateToCart: () -> Unit,
+    onNavigateToLogin: () -> Unit,
+    onNavigateToMyOrders: () -> Unit
+) {
+    TopAppBar(
+        title = {
             Text(
-                "Ultimate Printing",
-                color = Color.White,
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Black,
-                lineHeight = 40.sp
+                "YheCutMedia Shop",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = {},
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = RoundedCornerShape(24.dp)
-            ) {
-                Text("Check", modifier = Modifier.padding(horizontal = 16.dp))
+        },
+        actions = {
+            if (currentUser != null && currentUser.role == UserRole.CUSTOMER) {
+                IconButton(onClick = onNavigateToMyOrders) {
+                    Icon(Icons.Default.Person, contentDescription = "My Orders")
+                }
             }
-        }
-    }
+            if (currentUser == null) {
+                IconButton(onClick = onNavigateToLogin) {
+                    Icon(Icons.Default.Person, contentDescription = "Login")
+                }
+            }
+            IconButton(onClick = onNavigateToCart) {
+                BadgedBox(
+                    badge = {
+                        if (cartCount > 0) {
+                            Badge { Text("$cartCount") }
+                        }
+                    },
+                ) {
+                    Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
+                }
+            }
+        },
+    )
 }
 
 @Composable
-fun CategoryTabs() {
-    val categories = listOf("Industrial", "Office", "Home", "Accessories", "3D Printers")
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(categories) { category ->
-            Surface(
-                modifier = Modifier.clickable { },
-                shape = RoundedCornerShape(24.dp),
-                color = if (category == "Industrial") Color.Black else Color(0xFFF5F5F5)
+private fun HomeContent(
+    padding: PaddingValues,
+    isLoading: Boolean,
+    products: List<Product>,
+    onAddToCart: (Product) -> Unit
+) {
+    when {
+        isLoading -> {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        products.isEmpty() -> {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = category,
-                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
-                    color = if (category == "Industrial") Color.White else Color.Black,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
+                    "No products available yet.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
+
+        else -> {
+            LazyColumn(
+                modifier =
+                    Modifier
+                        .padding(padding)
+                        .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                item { Spacer(Modifier.height(8.dp)) }
+                items(products) { product ->
+                    ProductCard(
+                        product = product,
+                        onAddToCart = { onAddToCart(product) },
+                    )
+                }
+                item { Spacer(Modifier.height(16.dp)) }
+            }
+        }
     }
 }
 
 @Composable
-fun StoreProductCard(product: Product, onProductClick: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onProductClick() }
+fun ProductCard(
+    product: Product,
+    onAddToCart: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(0.85f)
-                .clip(RoundedCornerShape(8.dp))
-                .background(Color(0xFFF9F9F9)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(64.dp), tint = Color.LightGray)
-            
-            // Star Rating
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                text = product.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = product.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                repeat(5) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFBA49), modifier = Modifier.size(14.dp))
+                Column {
+                    Text(
+                        text = "KES ${product.price}",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text =
+                            if (product.stock > 0) {
+                                "${product.stock} in stock"
+                            } else {
+                                "Out of stock"
+                            },
+                        style = MaterialTheme.typography.labelSmall,
+                        color =
+                            if (product.stock > 0) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
+                    )
                 }
-                Text(" (5)", fontSize = 10.sp, color = Color.Gray)
-            }
-            
-            // Bag/Cart Shortcut
-            Surface(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .offset(y = 12.dp)
-                    .size(36.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primary,
-                shadowElevation = 4.dp
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.ShoppingBag, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Button(
+                    onClick = onAddToCart,
+                    enabled = product.stock > 0,
+                ) {
+                    Text(if (product.stock > 0) "Add to Cart" else "Out of Stock")
                 }
             }
         }
-        
-        Spacer(Modifier.height(16.dp))
-        
-        Text(
-            product.category,
-            fontSize = 11.sp,
-            color = Color.Gray
-        )
-        
-        Text(
-            product.name,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        
-        Text(
-            "KES ${product.price}",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Black
-        )
-    }
-}
-
-@Composable
-fun HomeBottomNavigation(
-    cartCount: Int,
-    onCartClick: () -> Unit,
-    onAccountClick: () -> Unit
-) {
-    NavigationBar(containerColor = Color.White) {
-        NavigationBarItem(
-            selected = true,
-            onClick = {},
-            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-            label = { Text("Home") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.Search, contentDescription = null) },
-            label = { Text("Shop") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onCartClick,
-            icon = {
-                BadgedBox(badge = { if (cartCount > 0) Badge { Text(cartCount.toString()) } }) {
-                    Icon(Icons.Default.ShoppingBag, contentDescription = null)
-                }
-            },
-            label = { Text("Bag") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {},
-            icon = { Icon(Icons.Default.FavoriteBorder, contentDescription = null) },
-            label = { Text("Favorites") }
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = onAccountClick,
-            icon = { Icon(Icons.Default.Person, contentDescription = null) },
-            label = { Text("Profile") }
-        )
     }
 }

@@ -84,7 +84,7 @@ fun CustomerDashboard(
                         Spacer(Modifier.height(8.dp))
                     }
                     items(products) { product: Product ->
-                        ProductCard(
+                        DashboardProductCard(
                             product = product,
                             onAddToCart = { onProductClick(product) },
                         )
@@ -97,7 +97,7 @@ fun CustomerDashboard(
 }
 
 @Composable
-fun ProductCard(
+fun DashboardProductCard(
     product: Product,
     onAddToCart: () -> Unit = {},
 ) {
@@ -153,7 +153,7 @@ fun ProductCard(
 fun CustomerDashboardPreview() {
     Column(Modifier.padding(16.dp)) {
         FakeData.previewProducts.forEach { product ->
-            ProductCard(product = product)
+            DashboardProductCard(product = product)
             Spacer(Modifier.height(8.dp))
         }
     }

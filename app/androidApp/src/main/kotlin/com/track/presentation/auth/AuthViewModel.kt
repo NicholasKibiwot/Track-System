@@ -1,61 +1,88 @@
-// com.track.presentation.auth/AuthViewModel.kt
 package com.track.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.track.data.repository.AuthRepository
-import com.track.domain.models.UserRole
+import com.google.firebase.auth.FirebaseAuth
+import com.track.data.repository.FirestoreRepository
+import com.track.domain.models.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel
     @Inject
     constructor(
-        private val authRepository: AuthRepository,
+        private val auth: FirebaseAuth,
+        private val repository: FirestoreRepository,
     ) : ViewModel() {
-        private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
-        val authState: StateFlow<AuthState> = _authState.asStateFlow()
+        private val _currentUser = MutableStateFlow<User?>(null)
+        val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
-        // ✅ SINGLE LOGIN METHOD FOR ALL ROLES
+        private val _isLoading = MutableStateFlow(false)
+        val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+        private val _errorMessage = MutableStateFlow<String?>(null)
+        val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+        init {
+            // If already signed in, load user profile
+            val firebaseUser = auth.currentUser
+            if (firebaseUser != null) {
+                loadUserProfile(firebaseUser.uid)
+            }
+        }
+
         fun login(
             email: String,
             password: String,
+            onSuccess: (role: String) -> Unit,
         ) {
+            if (email.isBlank() || password.isBlank()) {
+                _errorMessage.value = "Please enter your email and password."
+                return
+            }
             viewModelScope.launch {
-                _authState.value = AuthState.Loading
-                val result = authRepository.signIn(email, password)
-
-                _authState.value =
-                    when {
-                        result.isSuccess -> AuthState.Success(result.getOrNull()!!)
-                        else -> AuthState.Error(result.exceptionOrNull()?.message ?: "Login failed")
-                    }
+                _isLoading.value = true
+                _errorMessage.value = null
+                try {
+                    val result = auth.signInWithEmailAndPassword(email, password).await()
+                    val uid = result.user?.uid ?: throw Exception("Login failed.")
+                    val user =
+                        repository.getUser(uid)
+                            ?: throw Exception("User profile not found.")
+                    _currentUser.value = user
+                    _isLoading.value = false
+                    onSuccess(user.role.name)
+                } catch (e: Exception) {
+                    _errorMessage.value = e.localizedMessage ?: "Login failed."
+                    _isLoading.value = false
+                }
             }
         }
 
         fun logout() {
+            auth.signOut()
+            _currentUser.value = null
+        }
+
+        fun isAuthenticated(): Boolean = auth.currentUser != null
+
+        fun clearError() {
+            _errorMessage.value = null
+        }
+
+        private fun loadUserProfile(uid: String) {
             viewModelScope.launch {
-                authRepository.signOut()
-                _authState.value = AuthState.Idle
+                try {
+                    _currentUser.value = repository.getUser(uid)
+                } catch (e: Exception) {
+                    // silently fail on profile load
+                }
             }
         }
     }
-
-sealed class AuthState {
-    object Idle : AuthState()
-
-    object Loading : AuthState()
-
-    data class Success(
-        val role: UserRole,
-    ) : AuthState()
-
-    data class Error(
-        val message: String,
-    ) : AuthState()
-}

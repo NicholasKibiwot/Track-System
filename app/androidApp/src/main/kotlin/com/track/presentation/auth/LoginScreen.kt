@@ -1,213 +1,240 @@
 package com.track.presentation.auth
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.track.domain.models.UserRole
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (UserRole) -> Unit,
-    viewModel: LoginViewModel = hiltViewModel(),
+    onLoginSuccess: (role: String) -> Unit,
+    onBackClick: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Scaffold(
-        topBar = { LoginTopBar() }
+        topBar = {
+            LoginTopBar(onBackClick = onBackClick)
+        }
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.Start
+                .padding(horizontal = 24.dp)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LoginHeader()
-            
-            Spacer(modifier = Modifier.height(64.dp))
 
-            LoginFields(
+            Spacer(Modifier.height(40.dp))
+
+            LoginForm(
                 email = email,
-                onEmailChange = { 
+                onEmailChange = {
                     email = it
-                    if (email.isNotEmpty()) viewModel.clearError()
+                    viewModel.clearError()
                 },
                 password = password,
-                onPasswordChange = { 
+                onPasswordChange = {
                     password = it
-                    if (password.isNotEmpty()) viewModel.clearError()
+                    viewModel.clearError()
                 },
+                passwordVisible = passwordVisible,
+                onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
+                isLoading = isLoading,
                 errorMessage = errorMessage
             )
 
-            LoginFooter(
+            Spacer(Modifier.height(16.dp))
+
+            LoginButton(
                 isLoading = isLoading,
-                onLoginClick = { viewModel.login(email, password, onLoginSuccess) }
+                isEnabled = email.isNotBlank() && password.isNotBlank(),
+                onClick = {
+                    viewModel.login(email.trim(), password) { role ->
+                        onLoginSuccess(role)
+                    }
+                }
             )
 
-            Spacer(modifier = Modifier.height(64.dp))
-            
-            SocialLoginSection()
+            Spacer(Modifier.height(16.dp))
+
+            LoginFooter()
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun LoginTopBar() {
+private fun LoginTopBar(onBackClick: () -> Unit) {
     TopAppBar(
-        title = { Text("") },
+        title = { Text("Sign In") },
         navigationIcon = {
-            IconButton(onClick = { /* Handle back if needed */ }) {
+            IconButton(onClick = onBackClick) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
             }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+        }
     )
 }
 
 @Composable
 private fun LoginHeader() {
-    Spacer(modifier = Modifier.height(32.dp))
+    Icon(
+        imageVector = Icons.Default.Lock,
+        contentDescription = null,
+        modifier = Modifier.size(64.dp),
+        tint = MaterialTheme.colorScheme.primary
+    )
+    Spacer(Modifier.height(12.dp))
     Text(
-        text = "Login",
-        style = MaterialTheme.typography.headlineLarge,
+        text = "YheCutMedia",
+        style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
-        fontSize = 34.sp
+        color = MaterialTheme.colorScheme.primary
+    )
+    Text(
+        text = "Sign in to your account",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
 @Composable
-private fun LoginFields(
+private fun LoginForm(
     email: String,
     onEmailChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onPasswordVisibilityToggle: () -> Unit,
+    isLoading: Boolean,
     errorMessage: String?
 ) {
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
-        label = { Text("Email") },
-        placeholder = { Text("e.g. customer@yhecutmedia.com") },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-        isError = errorMessage != null,
+        label = { Text("Email address") },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        colors = textFieldColors()
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        singleLine = true,
+        enabled = !isLoading
     )
-    
-    Spacer(modifier = Modifier.height(8.dp))
+    Spacer(Modifier.height(12.dp))
 
     OutlinedTextField(
         value = password,
         onValueChange = onPasswordChange,
         label = { Text("Password") },
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        isError = errorMessage != null,
-        supportingText = { 
-            if (errorMessage != null) {
-                Text(errorMessage, color = MaterialTheme.colorScheme.error)
-            }
-        },
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(4.dp),
-        colors = textFieldColors()
+        singleLine = true,
+        enabled = !isLoading,
+        visualTransformation = if (passwordVisible)
+            VisualTransformation.None
+        else
+            PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        trailingIcon = {
+            IconButton(onClick = onPasswordVisibilityToggle) {
+                Icon(
+                    imageVector = if (passwordVisible)
+                        Icons.Default.VisibilityOff
+                    else
+                        Icons.Default.Visibility,
+                    contentDescription = if (passwordVisible)
+                        "Hide password"
+                    else
+                        "Show password"
+                )
+            }
+        }
     )
+    
+    if (errorMessage != null) {
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = errorMessage,
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
-private fun LoginFooter(
+private fun LoginButton(
     isLoading: Boolean,
-    onLoginClick: () -> Unit
+    isEnabled: Boolean,
+    onClick: () -> Unit
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.End
-    ) {
-        TextButton(onClick = { /* Forgot password */ }) {
-            Text("Forgot your password? →", color = MaterialTheme.colorScheme.onSurface)
-        }
-    }
-
-    Spacer(modifier = Modifier.height(32.dp))
-
     Button(
-        onClick = onLoginClick,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
-        enabled = !isLoading,
-        shape = RoundedCornerShape(24.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            .height(52.dp),
+        enabled = !isLoading && isEnabled
     ) {
         if (isLoading) {
             CircularProgressIndicator(
+                modifier = Modifier.size(22.dp),
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.size(24.dp)
+                strokeWidth = 2.dp
             )
         } else {
             Text(
-                "LOGIN",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Medium,
-                letterSpacing = 1.2.sp
+                text = "Sign In",
+                style = MaterialTheme.typography.labelLarge
             )
         }
     }
 }
 
 @Composable
-private fun SocialLoginSection() {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Or login with social account", style = MaterialTheme.typography.bodySmall)
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            SocialButton(icon = "G") // Google Placeholder
-            SocialButton(icon = "f") // Facebook Placeholder
-        }
-    }
+private fun LoginFooter() {
+    Text(
+        text = "Staff, Admin and Drivers use their assigned credentials.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
-
-@Composable
-fun SocialButton(icon: String) {
-    Surface(
-        modifier = Modifier.size(92.dp, 64.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = Color.White,
-        shadowElevation = 2.dp
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            Text(icon, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-private fun textFieldColors() = OutlinedTextFieldDefaults.colors(
-    focusedBorderColor = MaterialTheme.colorScheme.primary,
-    unfocusedBorderColor = Color.Transparent,
-    focusedContainerColor = Color.White,
-    unfocusedContainerColor = Color.White
-)
