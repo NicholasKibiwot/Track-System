@@ -10,6 +10,7 @@ import com.track.domain.models.StaffProfile
 import com.track.domain.models.TrackingLocation
 import com.track.domain.models.TrackingRecord
 import com.track.domain.models.User
+import com.track.domain.models.UserRole
 
 /**
  * Used ONLY for Compose @Preview functions and UI design-time tools.
@@ -21,7 +22,7 @@ object FakeData {
             id = "user_001",
             email = "customer@yhecutmedia.com",
             name = "John Doe",
-            role = "CUSTOMER",
+            role = UserRole.CUSTOMER,
             isActive = true,
             phone = "+254712345678",
         )
@@ -31,7 +32,7 @@ object FakeData {
             id = "admin_001",
             email = "admin@yhecutmedia.com",
             name = "Super Admin",
-            role = "SUPER_ADMIN",
+            role = UserRole.SUPER_ADMIN,
             isActive = true,
             phone = "",
         )
@@ -41,7 +42,7 @@ object FakeData {
             id = "staff_001",
             email = "staff@yhecutmedia.com",
             name = "Demo Staff",
-            role = "STAFF",
+            role = UserRole.STAFF,
             isActive = false,
             phone = "",
         )
@@ -51,7 +52,7 @@ object FakeData {
             id = "driver_001",
             email = "driver@yhecutmedia.com",
             name = "Demo Driver",
-            role = "DRIVER",
+            role = UserRole.DRIVER,
             isActive = true,
             phone = "",
         )
@@ -200,4 +201,6 @@ object FakeData {
             driverId = "driver_user_001",
             locationHistory = emptyList(),
         )
+
+    fun getOrderById(id: String): Order? = previewOrders.find { it.id == id }
 }

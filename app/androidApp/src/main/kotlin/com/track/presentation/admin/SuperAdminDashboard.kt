@@ -13,7 +13,7 @@ fun SuperAdminDashboard() {
 
     Scaffold(topBar = { TopAppBar(title = { Text("Super Admin") }) }) { padding ->
         Column(Modifier.padding(padding)) {
-            TabRow(selectedTabIndex = selectedTab) {
+            PrimaryTabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->
                     Tab(selected = selectedTab == index, onClick = { selectedTab = index }, text = { Text(title) })
                 }
@@ -22,7 +22,7 @@ fun SuperAdminDashboard() {
                 when (selectedTab) {
                     0 -> OrderManagementScreen()
                     1 -> StaffManagementScreen()
-                    2 -> Text("Inventory Management UI (Add/Edit Products)")
+                    2 -> InventoryManagementScreen()
                 }
             }
         }

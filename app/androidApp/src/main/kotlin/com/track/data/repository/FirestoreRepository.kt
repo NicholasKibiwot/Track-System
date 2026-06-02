@@ -1,7 +1,10 @@
 package com.track.data.repository
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import com.track.domain.models.GeoLocation
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
@@ -10,6 +13,7 @@ import com.track.domain.models.StaffProfile
 import com.track.domain.models.TrackingLocation
 import com.track.domain.models.TrackingRecord
 import com.track.domain.models.User
+import com.track.domain.models.UserRole
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -21,158 +25,20 @@ import javax.inject.Singleton
 class FirestoreRepository
     @Inject
     constructor(
-        private val firestore: FirebaseFirestore,
+        private val db: FirebaseFirestore,
     ) {
-        // ─── USERS ──────────────────────────────────────────────────────────────
-
-        fun getUsersFlow(): Flow<List<User>> =
-            callbackFlow {
-                val listener =
-                    firestore
-                        .collection("users")
-                        .addSnapshotListener { snapshot, error ->
-                            if (error != null) {
-                                close(error)
-                                return@addSnapshotListener
-                            }
-                            val users =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(User::class.java)
-                                } ?: emptyList()
-                            trySend(users)
-                        }
-                awaitClose { listener.remove() }
-            }
-
-        fun getStaffUsersFlow(): Flow<List<User>> =
-            callbackFlow {
-                val listener =
-                    firestore
-                        .collection("users")
-                        .whereEqualTo("role", "STAFF")
-                        .addSnapshotListener { snapshot, error ->
-                            if (error != null) {
-                                close(error)
-                                return@addSnapshotListener
-                            }
-                            val users =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(User::class.java)
-                                } ?: emptyList()
-                            trySend(users)
-                        }
-                awaitClose { listener.remove() }
-            }
-
-        suspend fun getUserById(userId: String): User? =
-            firestore
-                .collection("users")
-                .document(userId)
-                .get()
-                .await()
-                .toObject(User::class.java)
-
-        suspend fun createUser(user: User): String {
-            val doc = firestore.collection("users").document()
-            doc.set(user).await()
-            return doc.id
-        }
-
-        suspend fun updateUserActiveStatus(
-            userId: String,
-            isActive: Boolean,
-        ) {
-            firestore
-                .collection("users")
-                .document(userId)
-                .update("isActive", isActive)
-                .await()
-        }
-
-        // ─── PRODUCTS ───────────────────────────────────────────────────────────
-
-        fun getProductsFlow(): Flow<List<Product>> =
-            callbackFlow {
-                val listener =
-                    firestore
-                        .collection("products")
-                        .whereEqualTo("isActive", true)
-                        .addSnapshotListener { snapshot, error ->
-                            if (error != null) {
-                                close(error)
-                                return@addSnapshotListener
-                            }
-                            val products =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(Product::class.java)
-                                } ?: emptyList()
-                            trySend(products)
-                        }
-                awaitClose { listener.remove() }
-            }
-
-        suspend fun getProductById(productId: String): Product? =
-            firestore
-                .collection("products")
-                .document(productId)
-                .get()
-                .await()
-                .toObject(Product::class.java)
-
-        suspend fun createProduct(product: Product): String {
-            val doc = firestore.collection("products").document()
-            doc.set(product).await()
-            return doc.id
-        }
-
-        // ─── STAFF PROFILES ─────────────────────────────────────────────────────
-
-        fun getStaffProfilesFlow(): Flow<List<StaffProfile>> =
-            callbackFlow {
-                val listener =
-                    firestore
-                        .collection("staff")
-                        .addSnapshotListener { snapshot, error ->
-                            if (error != null) {
-                                close(error)
-                                return@addSnapshotListener
-                            }
-                            val profiles =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(StaffProfile::class.java)
-                                } ?: emptyList()
-                            trySend(profiles)
-                        }
-                awaitClose { listener.remove() }
-            }
-
-        suspend fun updateStaffActiveStatus(
-            staffDocId: String,
-            isActive: Boolean,
-        ) {
-            firestore
-                .collection("staff")
-                .document(staffDocId)
-                .update("isActive", isActive)
-                .await()
-        }
-
-        // ─── ORDERS ─────────────────────────────────────────────────────────────
-
         fun getOrdersFlow(): Flow<List<Order>> =
             callbackFlow {
                 val listener =
-                    firestore
+                    db
                         .collection("orders")
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
                         .addSnapshotListener { snapshot, error ->
                             if (error != null) {
                                 close(error)
                                 return@addSnapshotListener
                             }
-                            val orders =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(Order::class.java)
-                                } ?: emptyList()
+                            val orders = snapshot?.toObjects(Order::class.java) ?: emptyList()
                             trySend(orders)
                         }
                 awaitClose { listener.remove() }
@@ -181,7 +47,7 @@ class FirestoreRepository
         fun getOrdersByCustomerFlow(customerId: String): Flow<List<Order>> =
             callbackFlow {
                 val listener =
-                    firestore
+                    db
                         .collection("orders")
                         .whereEqualTo("customerId", customerId)
                         .addSnapshotListener { snapshot, error ->
@@ -189,10 +55,7 @@ class FirestoreRepository
                                 close(error)
                                 return@addSnapshotListener
                             }
-                            val orders =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(Order::class.java)
-                                } ?: emptyList()
+                            val orders = snapshot?.toObjects(Order::class.java) ?: emptyList()
                             trySend(orders)
                         }
                 awaitClose { listener.remove() }
@@ -201,7 +64,7 @@ class FirestoreRepository
         fun getOrdersByDriverFlow(driverId: String): Flow<List<Order>> =
             callbackFlow {
                 val listener =
-                    firestore
+                    db
                         .collection("orders")
                         .whereEqualTo("driverId", driverId)
                         .addSnapshotListener { snapshot, error ->
@@ -209,65 +72,44 @@ class FirestoreRepository
                                 close(error)
                                 return@addSnapshotListener
                             }
-                            val orders =
-                                snapshot?.documents?.mapNotNull {
-                                    it.toObject(Order::class.java)
-                                } ?: emptyList()
+                            val orders = snapshot?.toObjects(Order::class.java) ?: emptyList()
                             trySend(orders)
                         }
                 awaitClose { listener.remove() }
             }
 
-        suspend fun getOrderById(orderId: String): Order? =
-            firestore
-                .collection("orders")
-                .document(orderId)
-                .get()
-                .await()
-                .toObject(Order::class.java)
-
-        suspend fun createOrder(order: Order): String {
-            val doc = firestore.collection("orders").document()
-            doc.set(order).await()
-            return doc.id
-        }
-
         suspend fun updateOrderStatus(
             orderId: String,
-            newStatus: OrderStatus,
+            status: OrderStatus,
         ) {
-            firestore
+            db
                 .collection("orders")
                 .document(orderId)
-                .update(
-                    mapOf(
-                        "orderStatus" to newStatus.name,
-                        "updatedAt" to Timestamp.now(),
-                    ),
-                ).await()
+                .update("orderStatus", status.name, "updatedAt", Timestamp.now())
+                .await()
         }
 
         suspend fun updateOrderLocation(
             orderId: String,
             newLocation: GeoLocation,
         ) {
-            firestore
+            db
                 .collection("orders")
                 .document(orderId)
                 .update(
-                    mapOf(
-                        "currentLocation" to newLocation,
-                        "updatedAt" to Timestamp.now(),
-                    ),
+                    "currentLocation",
+                    newLocation,
+                    "locationHistory",
+                    FieldValue.arrayUnion(newLocation),
+                    "updatedAt",
+                    Timestamp.now(),
                 ).await()
         }
-
-        // ─── TRACKING ───────────────────────────────────────────────────────────
 
         fun getTrackingRecordFlow(orderId: String): Flow<TrackingRecord?> =
             callbackFlow {
                 val listener =
-                    firestore
+                    db
                         .collection("tracking")
                         .document(orderId)
                         .addSnapshotListener { snapshot, error ->
@@ -275,8 +117,7 @@ class FirestoreRepository
                                 close(error)
                                 return@addSnapshotListener
                             }
-                            val record = snapshot?.toObject(TrackingRecord::class.java)
-                            trySend(record)
+                            trySend(snapshot?.toObject(TrackingRecord::class.java))
                         }
                 awaitClose { listener.remove() }
             }
@@ -286,20 +127,154 @@ class FirestoreRepository
             newLocation: TrackingLocation,
             driverId: String,
         ) {
-            firestore
+            db
                 .collection("tracking")
                 .document(orderId)
                 .set(
                     mapOf(
-                        "currentLocation" to
-                            mapOf(
-                                "address" to newLocation.address,
-                                "lat" to newLocation.lat,
-                                "lng" to newLocation.lng,
-                            ),
+                        "orderId" to orderId,
+                        "currentLocation" to newLocation,
                         "driverId" to driverId,
                         "lastUpdated" to Timestamp.now(),
+                        "locationHistory" to FieldValue.arrayUnion("${newLocation.lat},${newLocation.lng}"),
                     ),
+                    SetOptions.merge(),
                 ).await()
         }
+
+        fun getUsersFlow(): Flow<List<User>> =
+            callbackFlow {
+                val listener =
+                    db
+                        .collection("users")
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                close(error)
+                                return@addSnapshotListener
+                            }
+                            trySend(snapshot?.toObjects(User::class.java) ?: emptyList())
+                        }
+                awaitClose { listener.remove() }
+            }
+
+        fun getStaffUsersFlow(): Flow<List<User>> =
+            callbackFlow {
+                val listener =
+                    db
+                        .collection("users")
+                        .whereIn("role", listOf(UserRole.STAFF.name, UserRole.DRIVER.name))
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                close(error)
+                                return@addSnapshotListener
+                            }
+                            trySend(snapshot?.toObjects(User::class.java) ?: emptyList())
+                        }
+                awaitClose { listener.remove() }
+            }
+
+        fun getStaffProfilesFlow(): Flow<List<StaffProfile>> =
+            callbackFlow {
+                val listener =
+                    db
+                        .collection("staff")
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                close(error)
+                                return@addSnapshotListener
+                            }
+                            trySend(snapshot?.toObjects(StaffProfile::class.java) ?: emptyList())
+                        }
+                awaitClose { listener.remove() }
+            }
+
+        fun getProductsFlow(): Flow<List<Product>> =
+            callbackFlow {
+                val listener =
+                    db
+                        .collection("products")
+                        .addSnapshotListener { snapshot, error ->
+                            if (error != null) {
+                                close(error)
+                                return@addSnapshotListener
+                            }
+                            trySend(snapshot?.toObjects(Product::class.java) ?: emptyList())
+                        }
+                awaitClose { listener.remove() }
+            }
+
+        suspend fun createOrder(order: Order): String {
+            val docRef =
+                if (order.id.isBlank()) {
+                    db.collection("orders").document()
+                } else {
+                    db.collection("orders").document(order.id)
+                }
+            val finalOrder = if (order.id.isBlank()) order.copy(id = docRef.id) else order
+            docRef.set(finalOrder).await()
+            return docRef.id
+        }
+
+        suspend fun createProduct(product: Product): String {
+            val docRef =
+                if (product.id.isBlank()) {
+                    db.collection("products").document()
+                } else {
+                    db.collection("products").document(product.id)
+                }
+            val finalProduct = if (product.id.isBlank()) product.copy(id = docRef.id) else product
+            docRef.set(finalProduct).await()
+            return docRef.id
+        }
+
+        suspend fun createUser(user: User): String {
+            val docRef =
+                if (user.id.isBlank()) {
+                    db.collection("users").document()
+                } else {
+                    db.collection("users").document(user.id)
+                }
+            val finalUser = if (user.id.isBlank()) user.copy(id = docRef.id) else user
+            docRef.set(finalUser).await()
+            return docRef.id
+        }
+
+        suspend fun updateUserActiveStatus(
+            userId: String,
+            isActive: Boolean,
+        ) {
+            db.collection("users").document(userId).update("isActive", isActive).await()
+        }
+
+        suspend fun updateStaffActiveStatus(
+            staffId: String,
+            isActive: Boolean,
+        ) {
+            db.collection("staff").document(staffId).update("isActive", isActive).await()
+        }
+
+        suspend fun getOrderById(orderId: String): Order? =
+            try {
+                db
+                    .collection("orders")
+                    .document(orderId)
+                    .get()
+                    .await()
+                    .toObject(Order::class.java)
+            } catch (_: Exception) {
+                null
+            }
+
+        suspend fun getUser(userId: String): User? =
+            try {
+                val snapshot =
+                    db
+                        .collection("users")
+                        .document(userId)
+                        .get()
+                        .await()
+                snapshot.toObject(User::class.java)
+            } catch (_: Exception) {
+                null
+            }
     }

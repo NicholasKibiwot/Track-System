@@ -2,14 +2,14 @@ package com.track.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary Colors - Professional Blue Theme (suitable for logistics/tracking)
-val PrimaryBlue = Color(0xFF1976D2)
-val PrimaryBlueDark = Color(0xFF1565C0)
-val PrimaryBlueLight = Color(0xFF42A5F5)
+// Premium Red & Black Theme (Suitable for tech/high-end printer store)
+val ShopRed = Color(0xFFE91E63) // Vibrant Pinkish Red from the AliExpress-style home
+val ShopBlack = Color(0xFF1E1E1E)
+val ShopWhite = Color(0xFFFFFFFF)
+val ShopGray = Color(0xFFF5F5F5)
 
-// Secondary Colors - Orange for accents (visibility/urgency)
-val SecondaryOrange = Color(0xFFFF9800)
-val SecondaryOrangeDark = Color(0xFFF57C00)
+val PrimaryColor = Color(0xFFDB3022) // Classic e-commerce red
+val SecondaryColor = Color(0xFF222222) // Deep black for text and icons
 
 // Status Colors
 val StatusInTransit = Color(0xFF2196F3) // Blue
@@ -18,21 +18,15 @@ val StatusPending = Color(0xFFFFC107) // Amber
 val StatusDelayed = Color(0xFFF44336) // Red
 
 // Background Colors
-val BackgroundLight = Color(0xFFFAFAFA)
+val BackgroundLight = Color(0xFFF9F9F9)
 val BackgroundDark = Color(0xFF121212)
 val SurfaceLight = Color(0xFFFFFFFF)
 val SurfaceDark = Color(0xFF1E1E1E)
 
 // Text Colors
-val TextPrimary = Color(0xFF212121)
-val TextSecondary = Color(0xFF757575)
+val TextPrimary = Color(0xFF222222)
+val TextSecondary = Color(0xFF9B9B9B)
 val TextOnPrimary = Color(0xFFFFFFFF)
-val TextOnDark = Color(0xFFFFFFFF)
-
-// Kenya Flag Inspired Accent (optional branding)
-val KenyaBlack = Color(0xFF000000)
-val KenyaRed = Color(0xFFBB0000)
-val KenyaGreen = Color(0xFF006600)
 
 // Neutral Colors
 val Gray100 = Color(0xFFF5F5F5)
@@ -44,9 +38,3 @@ val Gray600 = Color(0xFF757575)
 val Gray700 = Color(0xFF616161)
 val Gray800 = Color(0xFF424242)
 val Gray900 = Color(0xFF212121)
-
-// Login Screen Gradient
-val LoginGradientStart = Color(0xFFA18CD1)
-val LoginGradientEnd = Color(0xFFFBC2EB)
-val LoginButtonWhite = Color(0xFFFFFFFF)
-val LoginTextFieldBackground = Color(0x33FFFFFF) // 20% opacity white

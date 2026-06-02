@@ -1,220 +1,203 @@
 package com.track.presentation.admin
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.track.data.FakeData
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
-import com.track.presentation.admin.SuperAdminViewModel
 
 @Composable
 fun OrderManagementScreen(viewModel: SuperAdminViewModel = hiltViewModel()) {
     val orders by viewModel.orders.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    when {
-        isLoading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        }
+    var selectedTab by remember { mutableStateOf("Delivered") }
+    val tabs = listOf("Delivered", "Processing", "Cancelled")
 
-        orders.isEmpty() -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(
-                    "No orders yet.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+    Column(modifier = Modifier.fillMaxSize()) {
+        OrderManagementHeader()
+        
+        OrderManagementTabs(
+            tabs = tabs,
+            selectedTab = selectedTab,
+            onTabSelected = { selectedTab = it }
+        )
 
-        else -> {
-            OrderManagementContent(
-                orders = orders,
-                onStatusChange = { order, newStatus ->
-                    viewModel.updateOrderStatus(order.id, newStatus)
-                },
-            )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (isLoading) {
+            LoadingIndicator()
+        } else {
+            val filteredOrders = filterOrders(orders, selectedTab)
+            OrderList(filteredOrders)
         }
     }
 }
 
 @Composable
-fun OrderManagementContent(
-    orders: List<Order>,
-    onStatusChange: (Order, OrderStatus) -> Unit,
-) {
-    var selectedOrder by remember { mutableStateOf<Order?>(null) }
+private fun OrderManagementHeader() {
+    Text(
+        "My Orders",
+        style = MaterialTheme.typography.headlineLarge,
+        fontWeight = FontWeight.Bold,
+        fontSize = 34.sp,
+        modifier = Modifier.padding(16.dp)
+    )
+}
 
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(horizontal = 16.dp),
+@Composable
+private fun OrderManagementTabs(
+    tabs: List<String>,
+    selectedTab: String,
+    onTabSelected: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(orders) { order: Order ->
-            Card(
-                onClick = { selectedOrder = order },
-                modifier = Modifier.fillMaxWidth(),
+        tabs.forEach { tab ->
+            val isSelected = selectedTab == tab
+            Button(
+                onClick = { onTabSelected(tab) },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isSelected) Color.Black else Color.Transparent,
+                    contentColor = if (isSelected) Color.White else Color.Black
+                ),
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(0.dp)
             ) {
-                Column(Modifier.padding(16.dp)) {
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Text(
-                            "ID: ${order.id}",
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Text(
-                            order.orderStatus.name,
-                            style = MaterialTheme.typography.labelMedium,
-                            color =
-                                when (order.orderStatus) {
-                                    OrderStatus.DELIVERED -> MaterialTheme.colorScheme.primary
-                                    OrderStatus.CANCELLED -> MaterialTheme.colorScheme.error
-                                    OrderStatus.INTRANSIT -> MaterialTheme.colorScheme.tertiary
-                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                        )
-                    }
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        "Customer: ${order.customerName}",
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Text(
-                        "Total: KES ${order.totalAmount}",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Text(
-                        "Payment: ${order.paymentMethod} • ${order.paymentStatus}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+                Text(tab)
             }
         }
     }
+}
 
-    // Order detail / manage dialog
-    selectedOrder?.let { order ->
-        AlertDialog(
-            onDismissRequest = { selectedOrder = null },
-            title = {
-                Text("Manage Order")
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        "Tracking: ${order.trackingNumber}",
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Text("Customer: ${order.customerName}")
-                    Text("Origin: ${order.origin}")
-                    Text("Destination: ${order.destination}")
-                    Text(
-                        "Driver: ${order.driverName ?: "Not assigned"}",
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                    Divider()
-                    Text(
-                        "Items",
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    order.items.forEach { item ->
-                        Row(
-                            Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                        ) {
-                            Text("${item.quantity}x ${item.productName}")
-                            Text("KES ${item.unitPrice * item.quantity}")
-                        }
-                    }
-                    Divider()
-                    Text(
-                        "Total: KES ${order.totalAmount}",
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        "Update Status",
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    // Status chips — only show valid next statuses
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        listOf(
-                            OrderStatus.CONFIRMED,
-                            OrderStatus.PROCESSING,
-                            OrderStatus.SHIPPED,
-                            OrderStatus.INTRANSIT,
-                            OrderStatus.DELIVERED,
-                            OrderStatus.CANCELLED,
-                        ).forEach { status ->
-                            FilterChip(
-                                selected = order.orderStatus == status,
-                                onClick = {
-                                    onStatusChange(order, status)
-                                    selectedOrder = order.copy(orderStatus = status)
-                                },
-                                label = {
-                                    Text(
-                                        status.name,
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                },
-                            )
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { selectedOrder = null }) {
-                    Text("Done")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { selectedOrder = null }) {
-                    Text("Close")
-                }
-            },
+@Composable
+private fun OrderList(orders: List<Order>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        items(orders) { order ->
+            AdminOrderCard(order = order)
+        }
+    }
+}
+
+@Composable
+private fun LoadingIndicator() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        CircularProgressIndicator()
+    }
+}
+
+private fun filterOrders(orders: List<Order>, selectedTab: String): List<Order> {
+    return orders.filter { 
+        when(selectedTab) {
+            "Delivered" -> it.orderStatus == OrderStatus.DELIVERED
+            "Processing" -> it.orderStatus == OrderStatus.PROCESSING || 
+                           it.orderStatus == OrderStatus.PENDING || 
+                           it.orderStatus == OrderStatus.SHIPPED || 
+                           it.orderStatus == OrderStatus.INTRANSIT
+            "Cancelled" -> it.orderStatus == OrderStatus.CANCELLED
+            else -> true
+        }
+    }
+}
+
+@Composable
+fun AdminOrderCard(order: Order) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Order №${order.trackingNumber}", fontWeight = FontWeight.Bold)
+                Text("05-12-2023", color = Color.Gray) // Placeholder date
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            OrderCardDetails(order)
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            OrderCardFooter(order)
+        }
+    }
+}
+
+@Composable
+private fun OrderCardDetails(order: Order) {
+    Row(Modifier.fillMaxWidth()) {
+        Text("Tracking number: ", color = Color.Gray)
+        Text(order.id, fontWeight = FontWeight.Medium)
+    }
+    
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row {
+            Text("Quantity: ", color = Color.Gray)
+            Text("${order.items.sumOf { it.quantity }}", fontWeight = FontWeight.Medium)
+        }
+        Row {
+            Text("Total Amount: ", color = Color.Gray)
+            Text("KES ${order.totalAmount}", fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun OrderCardFooter(order: Order) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        OutlinedButton(
+            onClick = { /* Details */ },
+            shape = RoundedCornerShape(24.dp)
+        ) {
+            Text("Details", color = Color.Black)
+        }
+        
+        Text(
+            text = order.orderStatus.name,
+            color = getStatusColor(order.orderStatus),
+            fontWeight = FontWeight.Medium
         )
+    }
+}
+
+private fun getStatusColor(status: OrderStatus): Color {
+    return when(status) {
+        OrderStatus.DELIVERED -> Color(0xFF2AA952)
+        OrderStatus.CANCELLED -> Color(0xFFF01F0E)
+        else -> Color(0xFFF5A623)
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun OrderManagementScreenPreview() {
-    OrderManagementContent(
-        orders = FakeData.previewOrders,
-        onStatusChange = { _, _ -> },
-    )
+    OrderManagementScreen()
 }

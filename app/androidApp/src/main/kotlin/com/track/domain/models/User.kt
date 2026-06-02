@@ -7,8 +7,8 @@ data class User(
     @DocumentId val id: String = "",
     val email: String = "",
     val name: String = "",
-    val role: String = "", // "SUPER_ADMIN", "STAFF", "DRIVER", "CUSTOMER"
-    val isActive: Boolean = true,
+    val role: UserRole = UserRole.CUSTOMER, // 👈 Must be UserRole, NOT String
     val phone: String = "",
     val createdAt: Timestamp = Timestamp.now(),
+    val isActive: Boolean = true,
 )

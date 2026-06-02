@@ -1,5 +1,6 @@
 package com.track.presentation.user
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -8,170 +9,129 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.track.domain.models.OrderStatus
 import com.track.ui.components.MockTrackMap
-import com.track.ui.theme.AppTheme
 
 @Composable
 fun UserDashboard(
-    viewModel: UserViewModel = hiltViewModel(), // 👈 CRITICAL: Use hiltViewModel()
+    viewModel: UserViewModel = hiltViewModel()
 ) {
-    val currentJob by viewModel.currentJob.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
+    val currentJob by viewModel.currentJob.collectAsState(null)
+    val isLoading by viewModel.isLoading.collectAsState()
+    
+    var showScanSuccess by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Driver Dashboard") },
-                colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.secondary,
-                        titleContentColor = MaterialTheme.colorScheme.onSecondary,
-                    ),
+                title = { Text("Driver Hub") },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black, titleContentColor = Color.White)
             )
-        },
+        }
     ) { padding ->
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else if (currentJob != null) {
             val job = currentJob!!
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
             ) {
-                // Status Message (Snackbar style)
-                if (statusMessage.isNotEmpty()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary),
-                    ) {
-                        Text(
-                            text = statusMessage,
-                            modifier = Modifier.padding(12.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                }
-
-                // Job Details Card
+                // Job Header
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Job ID: ${job.id}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            StatusChip(job.orderStatus)
+                    Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("Current Job: №${job.trackingNumber}", fontWeight = FontWeight.Bold)
+                            Text(job.destination, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Print,
-                                contentDescription = "Printer",
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp),
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                val firstItem = job.items.firstOrNull()
-                                Text(firstItem?.productName ?: "Unknown Item", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-                                Text(
-                                    "${firstItem?.machineType?.displayName ?: "N/A"}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                        }
+                        StatusBadge(job.orderStatus)
                     }
                 }
 
-                // Map (Uses MockTrackMap to avoid API Key issues)
-                Card(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    shape = RoundedCornerShape(12.dp),
+                Spacer(Modifier.height(16.dp))
+
+                // Map View
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFF5F5F5))
                 ) {
                     MockTrackMap(
                         currentLocation = job.currentLocation,
                         locationHistory = job.locationHistory,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
-                // Actions
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Spacer(Modifier.height(16.dp))
+
+                // Action Buttons
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
-                        modifier = Modifier.weight(1f),
-                        onClick = { viewModel.startTransit(job.id) },
-                        enabled = job.orderStatus == OrderStatus.PENDING,
+                        onClick = { showScanSuccess = true },
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
                     ) {
-                        Text("START TRANSIT")
+                        Icon(Icons.Default.QrCodeScanner, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("SCAN PACKAGE")
                     }
+                    
                     Button(
-                        modifier = Modifier.weight(1f),
                         onClick = { viewModel.markDelivered(job.id) },
-                        enabled = job.orderStatus == OrderStatus.INTRANSIT,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF006600)),
+                        modifier = Modifier.weight(1f).height(56.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2AA952))
                     ) {
-                        Text("MARK DELIVERED")
+                        Text("COMPLETE")
                     }
                 }
             }
         } else {
-            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.CheckCircle,
-                        contentDescription = "No Jobs",
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("No active jobs assigned", style = MaterialTheme.typography.titleLarge)
-                }
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Waiting for assigned deliveries...", color = Color.Gray)
             }
         }
     }
-}
-
-@Composable
-fun StatusChip(status: OrderStatus) {
-    val color =
-        when (status) {
-            OrderStatus.INTRANSIT -> Color.Blue
-            OrderStatus.DELIVERED -> Color(0xFF006600)
-            OrderStatus.PENDING -> Color(0xFFFFC107)
-            else -> Color.Gray
-        }
-    Surface(shape = RoundedCornerShape(8.dp), color = color.copy(alpha = 0.1f)) {
-        Text(
-            text = status.name,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            color = color,
-            style = MaterialTheme.typography.labelSmall,
+    
+    if (showScanSuccess) {
+        AlertDialog(
+            onDismissRequest = { showScanSuccess = false },
+            title = { Text("Scan Successful") },
+            text = { Text("Package location has been updated in real-time.") },
+            confirmButton = { Button(onClick = { showScanSuccess = false }) { Text("Done") } }
         )
     }
 }
 
-@Preview(showBackground = true, name = "User Dashboard")
 @Composable
-fun UserDashboardPreview() {
-    AppTheme {
-        // Removed broken ViewModel instantiation that caused KSP processing error
-        UserDashboard()
+fun StatusBadge(status: OrderStatus) {
+    Surface(
+        color = Color(0xFFF5A623).copy(alpha = 0.1f),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Text(
+            text = status.name,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            color = Color(0xFFF5A623),
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

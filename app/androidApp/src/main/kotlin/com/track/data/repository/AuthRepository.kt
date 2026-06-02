@@ -1,4 +1,3 @@
-
 package com.track.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
@@ -19,28 +18,23 @@ class AuthRepository
         val currentUser: FirebaseUser? get() = firebaseAuth.currentUser
         val currentUserId: String? get() = currentUser?.uid
 
-        // ✅ FIXED: Returns UserRole after successful sign-in
         suspend fun signIn(
             email: String,
             password: String,
-        ): Result<UserRole> =
-            try {
+        ): Result<UserRole> {
+            return try {
                 val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
                 val user = result.user ?: return Result.failure(Exception("User is null"))
 
-                // Fetch user document to get role
-                val userData = firestoreRepository.getUserById(user.uid)
-                val roleString = userData?.role ?: "CUSTOMER"
-                val role = try {
-                    UserRole.valueOf(roleString)
-                } catch (e: Exception) {
-                    UserRole.CUSTOMER
-                }
+                // Fetch user document to get role (Fixes "Unresolved reference 'getUser'" & "'role'")
+                val userData = firestoreRepository.getUser(user.uid)
+                val role = userData?.role ?: UserRole.CUSTOMER
 
                 Result.success(role)
             } catch (e: Exception) {
                 Result.failure(e)
             }
+        }
 
         suspend fun signUp(
             email: String,
@@ -48,8 +42,8 @@ class AuthRepository
             name: String,
             role: UserRole = UserRole.CUSTOMER,
             phone: String = "",
-        ): Result<FirebaseUser> =
-            try {
+        ): Result<FirebaseUser> {
+            return try {
                 val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
                 val user = result.user ?: return Result.failure(Exception("User is null"))
 
@@ -58,7 +52,8 @@ class AuthRepository
                         id = user.uid,
                         email = email,
                         name = name,
-                        role = role.name,
+                        role = role, // Now safely matches the UserRole enum in User.kt
+                        phone = phone,
                         isActive = true,
                     )
                 firestoreRepository.createUser(userData)
@@ -66,12 +61,13 @@ class AuthRepository
             } catch (e: Exception) {
                 Result.failure(e)
             }
+        }
 
         suspend fun signOut() {
             firebaseAuth.signOut()
         }
 
-        suspend fun getCurrentUserData(): User? = currentUserId?.let { firestoreRepository.getUserById(it) }
+        suspend fun getCurrentUserData(): User? = currentUserId?.let { firestoreRepository.getUser(it) }
 
         fun isAuthenticated(): Boolean = currentUser != null
     }
