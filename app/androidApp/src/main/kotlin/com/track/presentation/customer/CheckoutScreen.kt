@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
     onOrderSuccess: (String) -> Unit,
@@ -27,10 +28,16 @@ fun CheckoutScreen(
 ) {
     var deliveryType by remember { mutableStateOf("COMPANY") }
     var paymentMethod by remember { mutableStateOf("CARD") }
-    var address by remember { mutableStateOf("Jane Doe\n3 Bridge-court\nChino Hills, CA 91709, United States") }
+    
+    // Real Address Fields
+    var fullName by remember { mutableStateOf("") }
+    var streetAddress by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
 
     val cartTotal = viewModel.cartTotal
     val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
 
     Scaffold(
         topBar = {
@@ -50,134 +57,188 @@ fun CheckoutScreen(
                 .padding(padding)
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             Spacer(modifier = Modifier.height(8.dp))
             
             // Shipping Address Section
-            Column {
-                Text("Shipping address", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.White,
-                    shadowElevation = 1.dp
-                ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Jane Doe", fontWeight = FontWeight.Medium)
-                            Text("Change", color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable {})
-                        }
-                        Text(
-                            address,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.Gray,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-                    }
-                }
+            Text("Shipping Address", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            
+            OutlinedTextField(
+                value = fullName,
+                onValueChange = { fullName = it },
+                label = { Text("Full Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            
+            OutlinedTextField(
+                value = streetAddress,
+                onValueChange = { streetAddress = it },
+                label = { Text("Street Address") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = city,
+                    onValueChange = { city = it },
+                    label = { Text("City") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it },
+                    label = { Text("Phone") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true
+                )
             }
 
-            // Payment Section
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Payment", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text("Change", color = MaterialTheme.colorScheme.primary, modifier = Modifier.clickable {})
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        modifier = Modifier.size(64.dp, 38.dp),
-                        shape = RoundedCornerShape(4.dp),
-                        color = Color.White,
-                        shadowElevation = 1.dp
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text("MasterCard", fontSize = 8.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                    Text("**** **** **** 3947", modifier = Modifier.padding(start = 16.dp), fontWeight = FontWeight.Medium)
-                }
+            // Payment Method Section
+            Text("Payment Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                PaymentMethodCard(
+                    modifier = Modifier.weight(1f),
+                    isSelected = paymentMethod == "CARD",
+                    label = "Card",
+                    icon = Icons.Default.CreditCard,
+                    onClick = { paymentMethod = "CARD" }
+                )
+                PaymentMethodCard(
+                    modifier = Modifier.weight(1f),
+                    isSelected = paymentMethod == "MOMO",
+                    label = "M-Pesa",
+                    icon = Icons.Default.Smartphone,
+                    onClick = { paymentMethod = "MOMO" }
+                )
+                PaymentMethodCard(
+                    modifier = Modifier.weight(1f),
+                    isSelected = paymentMethod == "CASH",
+                    label = "Cash",
+                    icon = Icons.Default.Payments,
+                    onClick = { paymentMethod = "CASH" }
+                )
             }
 
             // Delivery Method Section
-            Column {
-                Text("Delivery method", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    StoreDeliveryCard(Modifier.weight(1f), "FedEx", "2-3 days")
-                    StoreDeliveryCard(Modifier.weight(1f), "DHL", "1-2 days")
-                }
+            Text("Delivery Method", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                DeliveryCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Standard",
+                    time = "2-3 days",
+                    isSelected = deliveryType == "COMPANY",
+                    onClick = { deliveryType = "COMPANY" }
+                )
+                DeliveryCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Express",
+                    time = "1-2 days",
+                    isSelected = deliveryType == "OUTSOURCED",
+                    onClick = { deliveryType = "OUTSOURCED" }
+                )
             }
 
             // Summary Section
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Order:", color = Color.Gray)
-                    Text("KES $cartTotal", fontWeight = FontWeight.Medium)
-                }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Delivery:", color = Color.Gray)
-                    Text("KES 500", fontWeight = FontWeight.Medium)
-                }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Summary:", color = Color.Gray, fontWeight = FontWeight.Bold)
-                    Text("KES ${cartTotal + 500}", fontWeight = FontWeight.Black, fontSize = 18.sp)
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Items Total:", color = Color.Gray)
+                        Text("KES $cartTotal", fontWeight = FontWeight.Medium)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Delivery Fee:", color = Color.Gray)
+                        val fee = if (deliveryType == "OUTSOURCED") 800 else 400
+                        Text("KES $fee", fontWeight = FontWeight.Medium)
+                    }
+                    HorizontalDivider()
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Total Payable:", fontWeight = FontWeight.Bold)
+                        val fee = if (deliveryType == "OUTSOURCED") 800 else 400
+                        Text("KES ${cartTotal + fee}", fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary, fontSize = 18.sp)
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            if (errorMessage != null) {
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
 
             Button(
                 onClick = {
+                    val fullAddress = "$fullName, $streetAddress, $city. Tel: $phone"
                     viewModel.placeOrder(
                         paymentMethod = paymentMethod,
-                        origin = "Central Warehouse",
-                        destination = address,
+                        origin = "Main Warehouse",
+                        destination = fullAddress,
                         deliveryType = deliveryType,
                         onSuccess = onOrderSuccess
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                enabled = !isLoading,
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    .height(56.dp),
+                enabled = !isLoading && fullName.isNotBlank() && streetAddress.isNotBlank() && phone.isNotBlank(),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 if (isLoading) CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                else Text("SUBMIT ORDER", fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                else Text("PLACE ORDER", fontWeight = FontWeight.Bold)
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
-fun StoreDeliveryCard(modifier: Modifier, title: String, time: String) {
-    Surface(
-        modifier = modifier.height(72.dp),
-        shape = RoundedCornerShape(8.dp),
-        color = Color.White,
-        shadowElevation = 1.dp
+fun PaymentMethodCard(
+    modifier: Modifier,
+    isSelected: Boolean,
+    label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: () -> Unit
+) {
+    OutlinedCard(
+        modifier = modifier.clickable { onClick() },
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
+        colors = CardDefaults.outlinedCardColors(containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Icon(icon, contentDescription = null, tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray)
+            Text(label, style = MaterialTheme.typography.labelMedium, color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray)
+        }
+    }
+}
+
+@Composable
+fun DeliveryCard(
+    modifier: Modifier,
+    title: String,
+    time: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    OutlinedCard(
+        modifier = modifier.height(80.dp).clickable { onClick() },
+        border = if (isSelected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else androidx.compose.foundation.BorderStroke(1.dp, Color.LightGray),
+        colors = CardDefaults.outlinedCardColors(containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(title, fontWeight = FontWeight.Bold, color = Color.Gray)
-            Text(time, fontSize = 10.sp, color = Color.Gray)
+            Text(title, fontWeight = FontWeight.Bold, color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Black)
+            Text(time, fontSize = 11.sp, color = Color.Gray)
         }
     }
 }

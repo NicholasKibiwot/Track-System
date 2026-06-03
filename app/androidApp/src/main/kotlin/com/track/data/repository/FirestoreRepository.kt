@@ -246,6 +246,13 @@ class FirestoreRepository
             db.collection("users").document(userId).update("isActive", isActive).await()
         }
 
+        suspend fun updateUserOnlineStatus(
+            userId: String,
+            isOnline: Boolean,
+        ) {
+            db.collection("users").document(userId).update("isOnline", isOnline).await()
+        }
+
         suspend fun updateStaffActiveStatus(
             staffId: String,
             isActive: Boolean,

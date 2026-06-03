@@ -8,6 +8,10 @@ sealed class Screen(
 
     object Login : Screen("login")
 
+    object Register : Screen("register")
+
+    object StaffLogin : Screen("staff_login")
+
     // Customer (login required)
     object Cart : Screen("cart")
 

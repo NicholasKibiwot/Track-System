@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.util.UUID
 
 @HiltViewModel
 class CustomerViewModel
@@ -204,15 +205,14 @@ class CustomerViewModel
 
         // ── Place order ───────────────────────────────────────────────────────────
 
+        private fun generateShortTrackingCode(): String {
+            val chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+            return (1..8).map { chars.random() }.joinToString("")
+        }
+
         /**
          * Builds an Order from the current cart and writes it to
          * Firestore's "orders" collection.
-         *
-         * @param paymentMethod  "MOMO", "CARD", or "CASH"
-         * @param origin         Warehouse / pickup location
-         * @param destination    Customer delivery address
-         * @param deliveryType   "COMPANY" or "OUTSOURCED"
-         * @param onSuccess      Receives the new Firestore document ID
          */
         fun placeOrder(
             paymentMethod: String,
@@ -236,7 +236,7 @@ class CustomerViewModel
                     val orderItems =
                         _cartItems.value.map { cartItem ->
                             OrderItem(
-                                id = "item-${System.currentTimeMillis()}-${cartItem.product.id}",
+                                id = UUID.randomUUID().toString(),
                                 productId = cartItem.product.id,
                                 productName = cartItem.product.name,
                                 quantity = cartItem.quantity,
@@ -246,7 +246,7 @@ class CustomerViewModel
                         }
 
                     val total = orderItems.sumOf { it.unitPrice * it.quantity }
-                    val trackingNumber = "TRK-${System.currentTimeMillis()}"
+                    val trackingNumber = generateShortTrackingCode()
 
                     val newOrder =
                         Order(
@@ -272,8 +272,7 @@ class CustomerViewModel
 
                     val orderId = repository.createOrder(newOrder)
                     clearCart()
-                    _orderSuccess.value =
-                        "Order placed! Your tracking number is $trackingNumber"
+                    _orderSuccess.value = trackingNumber
                     _isLoading.value = false
                     onSuccess(orderId)
                 } catch (e: Exception) {

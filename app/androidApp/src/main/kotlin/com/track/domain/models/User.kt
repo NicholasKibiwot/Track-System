@@ -11,4 +11,5 @@ data class User(
     val phone: String = "",
     val createdAt: Timestamp = Timestamp.now(),
     val isActive: Boolean = true,
+    val isOnline: Boolean = false,
 )
