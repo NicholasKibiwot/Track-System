@@ -1,11 +1,8 @@
 package com.track.presentation.navigation
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,27 +17,24 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
-import com.track.presentation.admin.AdminDashboard
-import com.track.presentation.admin.InventoryManagementScreen
-import com.track.presentation.admin.OrderManagementScreen
-import com.track.presentation.admin.StaffManagementScreen
-import com.track.presentation.auth.AuthViewModel
+import com.track.presentation.admin.AdminAddProductScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
-import com.track.presentation.auth.StaffLoginScreen
 import com.track.presentation.customer.CartScreen
 import com.track.presentation.customer.CheckoutScreen
 import com.track.presentation.customer.CustomerViewModel
-import com.track.presentation.driver.DriverDashboard
-import com.track.presentation.driver.ScanPackageScreen
+import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
-import com.track.presentation.staff.OrderLookupScreen
-import com.track.presentation.staff.StaffDashboard
+import com.track.presentation.viewmodel.AppAuthViewModel
+import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.viewmodel.AppSuperAdminViewModel
+import com.track.presentation.welcome.WelcomeScreen
 
 @Composable
 fun AppNavHost(
-    authViewModel: AuthViewModel = hiltViewModel(),
-    customerViewModel: CustomerViewModel = hiltViewModel()
+    authViewModel: AppAuthViewModel = hiltViewModel(),
+    customerViewModel: AppCustomerViewModel = hiltViewModel(),
+    adminViewModel: AppSuperAdminViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -56,25 +50,41 @@ fun AppNavHost(
         navController = navController,
         startDestination = Screen.Home.route,
     ) {
-        addPublicRoutes(navController, currentUser)
-        addAuthRoutes(navController)
-        addCustomerRoutes(navController, currentUser, customerViewModel)
-        addAdminRoutes()
-        addStaffRoutes(navController)
-        addDriverRoutes(navController)
+        addPublicRoutes(navController, currentUser, customerViewModel)
+        addAuthRoutes(navController, authViewModel)
+        addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel)
+        addAdminRoutes(navController, adminViewModel)
     }
 }
 
-private fun NavGraphBuilder.addPublicRoutes(navController: NavHostController, currentUser: User?) {
+private fun NavGraphBuilder.addAdminRoutes(
+    navController: NavHostController,
+    adminViewModel: AppSuperAdminViewModel
+) {
+    composable(Screen.AdminAddProduct.route) {
+        AdminAddProductScreen(
+            viewModel = adminViewModel,
+            onBackClick = { navController.popBackStack() },
+            onProductAdded = { navController.popBackStack() }
+        )
+    }
+}
+
+private fun NavGraphBuilder.addPublicRoutes(
+    navController: NavHostController,
+    currentUser: User?,
+    customerViewModel: AppCustomerViewModel
+) {
+    composable(Screen.Welcome.route) {
+        WelcomeScreen(
+            onGetStarted = { navController.navigate(Screen.Home.route) },
+            onSignIn = { navController.navigate(Screen.Login.route) }
+        )
+    }
+
     composable(Screen.Home.route) {
         HomeScreen(
-            onNavigateToCart = {
-                if (currentUser == null) {
-                    navController.navigate(Screen.Login.route)
-                } else if (currentUser.role == UserRole.CUSTOMER) {
-                    navController.navigate(Screen.Cart.route)
-                }
-            },
+            onNavigateToCart = { navController.navigate(Screen.Cart.route) },
             onNavigateToLogin = { navController.navigate(Screen.Login.route) },
             onNavigateToMyOrders = {
                 if (currentUser != null && currentUser.role == UserRole.CUSTOMER) {
@@ -83,46 +93,52 @@ private fun NavGraphBuilder.addPublicRoutes(navController: NavHostController, cu
                     navController.navigate(Screen.Login.route)
                 }
             },
+            onNavigateToProductDetails = { productId ->
+                navController.navigate("product_details/$productId")
+            }
+        )
+    }
+
+    composable(
+        route = "product_details/{productId}",
+        arguments = listOf(navArgument("productId") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
+        ProductDetailsScreen(
+            productId = productId,
+            viewModel = customerViewModel,
+            onBackClick = { navController.popBackStack() },
+            onAddToCart = { product ->
+                customerViewModel.addToCart(product)
+            }
         )
     }
 }
 
-private fun NavGraphBuilder.addAuthRoutes(navController: NavHostController) {
+private fun NavGraphBuilder.addAuthRoutes(navController: NavHostController, authViewModel: AppAuthViewModel) {
     composable(Screen.Login.route) {
         LoginScreen(
+            viewModel = authViewModel,
             onLoginSuccess = { _ ->
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
+                if (navController.previousBackStackEntry != null) {
+                    navController.popBackStack()
+                } else {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
                 }
             },
             onNavigateToRegister = { navController.navigate(Screen.Register.route) },
-            onNavigateToStaffLogin = { navController.navigate(Screen.StaffLogin.route) },
             onBackClick = { navController.popBackStack() },
         )
     }
 
     composable(Screen.Register.route) {
         RegisterScreen(
+            viewModel = authViewModel,
             onRegisterSuccess = {
                 navController.navigate(Screen.Home.route) {
                     popUpTo(Screen.Home.route) { inclusive = true }
-                }
-            },
-            onBackClick = { navController.popBackStack() }
-        )
-    }
-
-    composable(Screen.StaffLogin.route) {
-        StaffLoginScreen(
-            onLoginSuccess = { role ->
-                val destination = when (role) {
-                    "SUPER_ADMIN" -> Screen.AdminDashboard.route
-                    "STAFF" -> Screen.StaffDashboard.route
-                    "DRIVER" -> Screen.DriverDashboard.route
-                    else -> Screen.Home.route
-                }
-                navController.navigate(destination) {
-                    popUpTo(Screen.StaffLogin.route) { inclusive = true }
                 }
             },
             onBackClick = { navController.popBackStack() }
@@ -133,32 +149,34 @@ private fun NavGraphBuilder.addAuthRoutes(navController: NavHostController) {
 private fun NavGraphBuilder.addCustomerRoutes(
     navController: NavHostController,
     currentUser: User?,
-    customerViewModel: CustomerViewModel
+    customerViewModel: AppCustomerViewModel,
+    authViewModel: AppAuthViewModel
 ) {
     composable(Screen.Cart.route) {
-        if (currentUser?.role == UserRole.CUSTOMER) {
-            CartScreen(
-                onNavigateToCheckout = { navController.navigate(Screen.Checkout.route) },
-                onBackClick = { navController.popBackStack() },
-            )
-        } else {
-            navController.popBackStack()
-        }
+        CartScreen(
+            viewModel = customerViewModel,
+            authViewModel = authViewModel,
+            onNavigateToCheckout = {
+                if (currentUser == null) {
+                    navController.navigate(Screen.Login.route)
+                } else {
+                    navController.navigate(Screen.Checkout.route)
+                }
+            },
+            onBackClick = { navController.popBackStack() },
+        )
     }
 
     composable(Screen.Checkout.route) {
-        if (currentUser?.role == UserRole.CUSTOMER) {
-            CheckoutScreen(
-                onOrderSuccess = { orderId ->
-                    navController.navigate("tracking/$orderId") {
-                        popUpTo(Screen.Cart.route) { inclusive = true }
-                    }
-                },
-                onBackClick = { navController.popBackStack() },
-            )
-        } else {
-            navController.popBackStack()
-        }
+        CheckoutScreen(
+            viewModel = customerViewModel,
+            onOrderSuccess = { orderId ->
+                navController.navigate("tracking/$orderId") {
+                    popUpTo(Screen.Cart.route) { inclusive = true }
+                }
+            },
+            onBackClick = { navController.popBackStack() },
+        )
     }
 
     composable(Screen.MyOrders.route) {
@@ -180,7 +198,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
                 if (trackingSuccess != null) {
                     Text("SUCCESS!", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
                     Text("Tracking ID: $trackingSuccess", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                    androidx.compose.material3.Button(onClick = { customerViewModel.clearOrderSuccess() }) {
+                    Button(onClick = { customerViewModel.clearOrderSuccess() }) {
                         Text("OK")
                     }
                 } else {
@@ -189,27 +207,5 @@ private fun NavGraphBuilder.addCustomerRoutes(
                 }
             }
         }
-    }
-}
-
-private fun NavGraphBuilder.addAdminRoutes() {
-    composable(Screen.AdminDashboard.route) { AdminDashboard() }
-    composable(Screen.AdminOrders.route) { OrderManagementScreen() }
-    composable(Screen.AdminStaff.route) { StaffManagementScreen() }
-    composable(Screen.AdminProducts.route) { InventoryManagementScreen() }
-}
-
-private fun NavGraphBuilder.addStaffRoutes(navController: NavHostController) {
-    composable(Screen.StaffDashboard.route) { StaffDashboard() }
-    composable(Screen.StaffOrderLookup.route) { OrderLookupScreen(trackingId = null) }
-}
-
-private fun NavGraphBuilder.addDriverRoutes(navController: NavHostController) {
-    composable(Screen.DriverDashboard.route) { DriverDashboard() }
-    composable(Screen.DriverScan.route) {
-        ScanPackageScreen(
-            onScanSuccess = { _ -> /* Handle scan logic */ },
-            onBackClick = { navController.popBackStack() }
-        )
     }
 }

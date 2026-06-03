@@ -16,17 +16,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.UserRole
+import com.track.presentation.viewmodel.AppAuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoginSuccess: (role: String) -> Unit,
     onNavigateToRegister: () -> Unit,
-    onNavigateToStaffLogin: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel(),
+    viewModel: AppAuthViewModel,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -88,10 +87,13 @@ fun LoginScreen(
             }
 
             Spacer(Modifier.height(16.dp))
-
-            TextButton(onClick = onNavigateToStaffLogin) {
-                Text("Login as Staff/Driver", color = MaterialTheme.colorScheme.secondary)
-            }
+            
+            // Note for customers: Staff login is in a separate app
+            Text(
+                text = "Staff or Driver? Use the Track Staff app.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -119,7 +121,7 @@ private fun LoginHeader() {
     )
     Spacer(Modifier.height(12.dp))
     Text(
-        text = "YheCutMedia",
+        text = "Track",
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary

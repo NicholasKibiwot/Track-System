@@ -1,4 +1,4 @@
-package com.track.di
+package com.track.staff.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

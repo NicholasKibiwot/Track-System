@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "582302215652",
+    "project_id": "yhecutmedia-92d9a",
+    "storage_bucket": "yhecutmedia-92d9a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582302215652:android:3e5de8c2d49565c7436bf1",
+        "android_client_info": {
+          "package_name": "com.track"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4IOV2bykZo79NLJTczlqCSpsQDm66sYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:582302215652:android:staffapp_placeholder_id",
+        "android_client_info": {
+          "package_name": "com.track.staff"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD4IOV2bykZo79NLJTczlqCSpsQDm66sYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
