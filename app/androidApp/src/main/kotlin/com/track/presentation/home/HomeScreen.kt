@@ -36,6 +36,7 @@ import com.track.presentation.viewmodel.AppCustomerViewModel
 fun HomeScreen(
     onNavigateToCart: () -> Unit,
     onNavigateToLogin: () -> Unit,
+    onNavigateToProfile: () -> Unit,
     onNavigateToMyOrders: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
     viewModel: AppCustomerViewModel = hiltViewModel()
@@ -81,7 +82,7 @@ fun HomeScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },
                     label = { Text("Profile") },
                     selected = false,
-                    onClick = onNavigateToLogin
+                    onClick = onNavigateToProfile
                 )
             }
         }

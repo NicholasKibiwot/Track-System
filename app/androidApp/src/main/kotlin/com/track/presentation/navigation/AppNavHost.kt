@@ -22,6 +22,7 @@ import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.CartScreen
 import com.track.presentation.customer.CheckoutScreen
+import com.track.presentation.customer.ProfileScreen
 // ← CustomerViewModel import REMOVED from here
 import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
@@ -51,7 +52,7 @@ fun AppNavHost(
     ) {
         addPublicRoutes(navController, currentUser, customerViewModel)
         addAuthRoutes(navController, authViewModel)
-        addCustomerRoutes(navController, currentUser, customerViewModel)
+        addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel)
         addAdminRoutes(navController, adminViewModel)
     }
 }
@@ -85,6 +86,13 @@ private fun NavGraphBuilder.addPublicRoutes(
         HomeScreen(
             onNavigateToCart = { navController.navigate(Screen.Cart.route) },
             onNavigateToLogin = { navController.navigate(Screen.Login.route) },
+            onNavigateToProfile = {
+                if (currentUser != null) {
+                    navController.navigate(Screen.Profile.route)
+                } else {
+                    navController.navigate(Screen.Login.route)
+                }
+            },
             onNavigateToMyOrders = {
                 if (currentUser != null && currentUser.role == UserRole.CUSTOMER) {
                     navController.navigate(Screen.MyOrders.route)
@@ -150,6 +158,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     navController: NavHostController,
     currentUser: User?,
     customerViewModel: AppCustomerViewModel,
+    authViewModel: AppAuthViewModel,
 ) {
     composable(Screen.Cart.route) {
         CartScreen(
@@ -181,6 +190,21 @@ private fun NavGraphBuilder.addCustomerRoutes(
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("My Orders Screen (Coming Soon)")
         }
+    }
+
+    composable(Screen.Profile.route) {
+        ProfileScreen(
+            onBackClick = { navController.popBackStack() },
+            onNavigateToOrders = { navController.navigate(Screen.MyOrders.route) },
+            onNavigateToEditProfile = { /* TODO */ },
+            onLogout = {
+                authViewModel.logout()
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Home.route) { inclusive = true }
+                }
+            },
+            authViewModel = authViewModel
+        )
     }
 
     composable(

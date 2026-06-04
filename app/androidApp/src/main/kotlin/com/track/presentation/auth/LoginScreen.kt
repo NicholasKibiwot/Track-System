@@ -22,10 +22,10 @@ import com.track.presentation.viewmodel.AppAuthViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
+    viewModel: AppAuthViewModel,
     onLoginSuccess: (role: String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: AppAuthViewModel,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }

@@ -19,6 +19,7 @@ sealed class Screen(
     object Checkout : Screen("checkout")
 
     object MyOrders : Screen("my_orders")
+    object Profile : Screen("profile")
 
     data class ProductDetails(val productId: String) : Screen("product_details/{productId}") {
         val resolvedRoute get() = "product_details/$productId"
