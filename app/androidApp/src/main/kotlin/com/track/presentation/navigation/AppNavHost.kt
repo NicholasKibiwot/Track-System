@@ -22,7 +22,7 @@ import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.CartScreen
 import com.track.presentation.customer.CheckoutScreen
-import com.track.presentation.customer.CustomerViewModel
+// ← CustomerViewModel import REMOVED from here
 import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
 import com.track.presentation.viewmodel.AppAuthViewModel
@@ -34,12 +34,11 @@ import com.track.presentation.welcome.WelcomeScreen
 fun AppNavHost(
     authViewModel: AppAuthViewModel = hiltViewModel(),
     customerViewModel: AppCustomerViewModel = hiltViewModel(),
-    adminViewModel: AppSuperAdminViewModel = hiltViewModel()
+    adminViewModel: AppSuperAdminViewModel = hiltViewModel(),
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
 
-    // Pass customer info to CustomerViewModel whenever user changes
     currentUser?.let { user ->
         if (user.role == UserRole.CUSTOMER) {
             customerViewModel.setCustomer(user.id, user.name)
@@ -52,20 +51,20 @@ fun AppNavHost(
     ) {
         addPublicRoutes(navController, currentUser, customerViewModel)
         addAuthRoutes(navController, authViewModel)
-        addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel)
+        addCustomerRoutes(navController, currentUser, customerViewModel)
         addAdminRoutes(navController, adminViewModel)
     }
 }
 
 private fun NavGraphBuilder.addAdminRoutes(
     navController: NavHostController,
-    adminViewModel: AppSuperAdminViewModel
+    adminViewModel: AppSuperAdminViewModel,
 ) {
     composable(Screen.AdminAddProduct.route) {
         AdminAddProductScreen(
             viewModel = adminViewModel,
             onBackClick = { navController.popBackStack() },
-            onProductAdded = { navController.popBackStack() }
+            onProductAdded = { navController.popBackStack() },
         )
     }
 }
@@ -73,12 +72,12 @@ private fun NavGraphBuilder.addAdminRoutes(
 private fun NavGraphBuilder.addPublicRoutes(
     navController: NavHostController,
     currentUser: User?,
-    customerViewModel: AppCustomerViewModel
+    customerViewModel: AppCustomerViewModel,
 ) {
     composable(Screen.Welcome.route) {
         WelcomeScreen(
             onGetStarted = { navController.navigate(Screen.Home.route) },
-            onSignIn = { navController.navigate(Screen.Login.route) }
+            onSignIn = { navController.navigate(Screen.Login.route) },
         )
     }
 
@@ -95,27 +94,28 @@ private fun NavGraphBuilder.addPublicRoutes(
             },
             onNavigateToProductDetails = { productId ->
                 navController.navigate("product_details/$productId")
-            }
+            },
         )
     }
 
     composable(
         route = "product_details/{productId}",
-        arguments = listOf(navArgument("productId") { type = NavType.StringType })
+        arguments = listOf(navArgument("productId") { type = NavType.StringType }),
     ) { backStackEntry ->
         val productId = backStackEntry.arguments?.getString("productId") ?: return@composable
         ProductDetailsScreen(
             productId = productId,
             viewModel = customerViewModel,
             onBackClick = { navController.popBackStack() },
-            onAddToCart = { product ->
-                customerViewModel.addToCart(product)
-            }
+            onAddToCart = { product -> customerViewModel.addToCart(product) },
         )
     }
 }
 
-private fun NavGraphBuilder.addAuthRoutes(navController: NavHostController, authViewModel: AppAuthViewModel) {
+private fun NavGraphBuilder.addAuthRoutes(
+    navController: NavHostController,
+    authViewModel: AppAuthViewModel,
+) {
     composable(Screen.Login.route) {
         LoginScreen(
             viewModel = authViewModel,
@@ -141,7 +141,7 @@ private fun NavGraphBuilder.addAuthRoutes(navController: NavHostController, auth
                     popUpTo(Screen.Home.route) { inclusive = true }
                 }
             },
-            onBackClick = { navController.popBackStack() }
+            onBackClick = { navController.popBackStack() },
         )
     }
 }
@@ -150,12 +150,10 @@ private fun NavGraphBuilder.addCustomerRoutes(
     navController: NavHostController,
     currentUser: User?,
     customerViewModel: AppCustomerViewModel,
-    authViewModel: AppAuthViewModel
 ) {
     composable(Screen.Cart.route) {
         CartScreen(
             viewModel = customerViewModel,
-            authViewModel = authViewModel,
             onNavigateToCheckout = {
                 if (currentUser == null) {
                     navController.navigate(Screen.Login.route)
@@ -192,12 +190,23 @@ private fun NavGraphBuilder.addCustomerRoutes(
         val orderId = backStackEntry.arguments?.getString("orderId") ?: return@composable
         val order = customerViewModel.getOrderById(orderId)
         val trackingSuccess by customerViewModel.orderSuccess.collectAsState()
-        
-        Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+
+        Box(
+            Modifier.fillMaxSize().padding(16.dp),
+            contentAlignment = Alignment.Center,
+        ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 if (trackingSuccess != null) {
-                    Text("SUCCESS!", style = MaterialTheme.typography.headlineLarge, color = MaterialTheme.colorScheme.primary)
-                    Text("Tracking ID: $trackingSuccess", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Text(
+                        "SUCCESS!",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        "Tracking ID: $trackingSuccess",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                    )
                     Button(onClick = { customerViewModel.clearOrderSuccess() }) {
                         Text("OK")
                     }

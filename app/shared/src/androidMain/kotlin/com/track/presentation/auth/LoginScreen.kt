@@ -16,8 +16,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.UserRole
-import com.track.presentation.viewmodel.AppAuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,10 +25,11 @@ fun LoginScreen(
     onLoginSuccess: (role: String) -> Unit,
     onNavigateToRegister: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: AppAuthViewModel,
+    viewModel: AuthViewModel,
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -61,6 +62,8 @@ fun LoginScreen(
                     password = it
                     viewModel.clearError()
                 },
+                passwordVisible = passwordVisible,
+                onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )
@@ -118,7 +121,7 @@ private fun LoginHeader() {
     )
     Spacer(Modifier.height(12.dp))
     Text(
-        text = "Track",
+        text = "YheCutMedia",
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
         color = MaterialTheme.colorScheme.primary
@@ -136,11 +139,11 @@ private fun LoginForm(
     onEmailChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onPasswordVisibilityToggle: () -> Unit,
     isLoading: Boolean,
     errorMessage: String?
 ) {
-    var passwordVisible by remember { mutableStateOf(false) }
-
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
@@ -165,7 +168,7 @@ private fun LoginForm(
             PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         trailingIcon = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+            IconButton(onClick = onPasswordVisibilityToggle) {
                 Icon(
                     imageVector = if (passwordVisible)
                         Icons.Default.VisibilityOff
