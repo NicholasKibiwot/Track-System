@@ -1,0 +1,6 @@
+# Firebase service account key — NEVER commit this file
+serviceAccountKey.json
+
+# Build outputs
+build/
+.gradle/
