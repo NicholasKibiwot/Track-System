@@ -53,6 +53,13 @@ kotlin {
             implementation(libs.androidx.material.icons.extended)
             implementation(libs.play.services.maps)
             implementation(libs.maps.compose)
+            implementation(libs.play.services.auth)
+            implementation(libs.credentials.auth)
+            implementation(libs.credentials.play.auth)
+            implementation(libs.googleid)
+            implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")
+            implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")
         }
         commonMain.dependencies {
             api(projects.core)

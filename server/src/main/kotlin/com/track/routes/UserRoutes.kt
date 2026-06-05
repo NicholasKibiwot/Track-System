@@ -20,6 +20,7 @@ import io.ktor.server.routing.*
 fun Route.userRoutes() {
     val db = FirestoreClient.getFirestore()
     val auth = FirebaseAuth.getInstance()
+    val missingUid = "Missing uid"
 
     route("/api/users") {
 
@@ -37,7 +38,7 @@ fun Route.userRoutes() {
                 "displayName" to (decoded.name ?: ""),
                 "email" to (decoded.email ?: ""),
                 "photoUrl" to (decoded.picture ?: ""),
-                "role" to "customer"
+                "role" to "CUSTOMER"
             )
 
             // Merge so existing data (phone, role) is not overwritten
@@ -45,13 +46,15 @@ fun Route.userRoutes() {
                 .set(userData, com.google.cloud.firestore.SetOptions.merge())
                 .get()
 
-            call.respond(HttpStatusCode.OK, userData)
+            // Fetch the final merged document to return it
+            val finalDoc = db.collection("users").document(decoded.uid).get().get()
+            call.respond(HttpStatusCode.OK, finalDoc.data ?: userData)
         }
 
         // Get a user profile by UID
         get("/{uid}") {
             val uid = call.parameters["uid"]
-                ?: throw IllegalArgumentException("Missing uid")
+                ?: throw IllegalArgumentException(missingUid)
             val doc = db.collection("users").document(uid).get().get()
             if (!doc.exists()) throw NoSuchElementException("User $uid not found")
             call.respond(HttpStatusCode.OK, doc.data ?: emptyMap<String, Any>())
@@ -60,7 +63,7 @@ fun Route.userRoutes() {
         // Update user role (admin only in production — add auth guard later)
         patch("/{uid}/role") {
             val uid = call.parameters["uid"]
-                ?: throw IllegalArgumentException("Missing uid")
+                ?: throw IllegalArgumentException(missingUid)
             val body = call.receive<Map<String, String>>()
             val role = body["role"] ?: throw IllegalArgumentException("Missing role field")
             require(role in listOf("customer", "driver", "admin")) {
@@ -68,6 +71,20 @@ fun Route.userRoutes() {
             }
             db.collection("users").document(uid).update("role", role).get()
             call.respond(HttpStatusCode.OK, mapOf("uid" to uid, "role" to role))
+        }
+
+        // Update profile extras (phone, address)
+        patch("/{uid}/profile") {
+            val uid = call.parameters["uid"]
+                ?: throw IllegalArgumentException(missingUid)
+            val body = call.receive<Map<String, String>>()
+            val update = mutableMapOf<String, Any>()
+            body["phoneNumber"]?.let { update["phoneNumber"] = it }
+            body["address"]?.let { update["address"] = it }
+            if (update.isNotEmpty()) {
+                db.collection("users").document(uid).update(update).get()
+            }
+            call.respond(HttpStatusCode.OK, mapOf("uid" to uid, "updated" to update))
         }
     }
 }

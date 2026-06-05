@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "582302215652",
+    "firebase_url": "https://yhecutmedia-92d9a-default-rtdb.firebaseio.com",
     "project_id": "yhecutmedia-92d9a",
     "storage_bucket": "yhecutmedia-92d9a.firebasestorage.app"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "582302215652-k2njdkv6cqom1gder3pfgjuittumlbhu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.track",
+            "certificate_hash": "7346a506b3bb88c5f09e024518c722c386910e35"
+          }
+        },
         {
           "client_id": "582302215652-c2fovnjevegiplri3gdcst4d0gcm8eqa.apps.googleusercontent.com",
           "client_type": 3

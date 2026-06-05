@@ -31,18 +31,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.Product
 import com.track.presentation.viewmodel.AppCustomerViewModel
 
+private const val SEE_ALL = "See All"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onNavigateToCart: () -> Unit,
-    onNavigateToLogin: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToMyOrders: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
     viewModel: AppCustomerViewModel = hiltViewModel()
 ) {
     val products by viewModel.products.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     
     val categories = listOf(
         CategoryItem("Clothes", Icons.Default.Checkroom, Color(0xFFFFEBEE)),
@@ -170,7 +169,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("#SpecialForYou", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("See All", color = Color(0xFFFF5252), fontSize = 14.sp)
+                    Text(SEE_ALL, color = Color(0xFFFF5252), fontSize = 14.sp)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -188,7 +187,7 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Category", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("See All", color = Color(0xFFFF5252), fontSize = 14.sp)
+                    Text(SEE_ALL, color = Color(0xFFFF5252), fontSize = 14.sp)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
@@ -214,7 +213,7 @@ fun HomeScreen(
                         Text("Closing in: ", color = Color.Gray, fontSize = 12.sp)
                         Text("02 : 12 : 56", color = Color(0xFFFF5252), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
-                    Text("See All", color = Color(0xFFFF5252), fontSize = 14.sp)
+                    Text(SEE_ALL, color = Color(0xFFFF5252), fontSize = 14.sp)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 

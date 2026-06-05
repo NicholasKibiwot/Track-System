@@ -17,6 +17,9 @@ kotlin {
     }
 }
 dependencies {
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.play.services.auth)
     implementation(libs.kotlinx.datetime)
     implementation(libs.firebase.analytics)
     implementation(platform(libs.firebase.bom))
@@ -58,8 +61,8 @@ android {
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.appVersionCode.get().toInt()
+        versionName = libs.versions.appVersionName.get()
     }
     packaging {
         resources {
@@ -68,7 +71,12 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {

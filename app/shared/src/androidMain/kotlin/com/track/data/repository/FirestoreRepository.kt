@@ -243,21 +243,33 @@ class FirestoreRepository
             userId: String,
             isActive: Boolean,
         ) {
-            db.collection("users").document(userId).update("isActive", isActive).await()
+            db
+                .collection("users")
+                .document(userId)
+                .update("isActive", isActive)
+                .await()
         }
 
         suspend fun updateUserOnlineStatus(
             userId: String,
             isOnline: Boolean,
         ) {
-            db.collection("users").document(userId).update("isOnline", isOnline).await()
+            db
+                .collection("users")
+                .document(userId)
+                .update("isOnline", isOnline)
+                .await()
         }
 
         suspend fun updateStaffActiveStatus(
             staffId: String,
             isActive: Boolean,
         ) {
-            db.collection("staff").document(staffId).update("isActive", isActive).await()
+            db
+                .collection("staff")
+                .document(staffId)
+                .update("isActive", isActive)
+                .await()
         }
 
         suspend fun getOrderById(orderId: String): Order? =
@@ -284,4 +296,23 @@ class FirestoreRepository
             } catch (_: Exception) {
                 null
             }
+
+        suspend fun updateUserProfile(
+            userId: String,
+            name: String,
+            phone: String,
+            shippingAddress: String,
+        ) {
+            db
+                .collection("users")
+                .document(userId)
+                .update(
+                    "name",
+                    name,
+                    "phone",
+                    phone,
+                    "shippingAddress",
+                    shippingAddress,
+                ).await()
+        }
     }

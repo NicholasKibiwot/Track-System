@@ -48,9 +48,9 @@ fun StaffNavHost(
             )
         }
 
-        addAdminRoutes(navController, authViewModel)
-        addStaffRoutes(navController, authViewModel)
-        addDriverRoutes(navController, authViewModel)
+        addAdminRoutes()
+        addStaffRoutes()
+        addDriverRoutes(navController)
     }
 }
 
@@ -63,19 +63,19 @@ private fun getStartDestination(role: String?): String {
     }
 }
 
-private fun NavGraphBuilder.addAdminRoutes(navController: NavHostController, authViewModel: AuthViewModel) {
+private fun NavGraphBuilder.addAdminRoutes() {
     composable(Screen.AdminDashboard.route) { AdminDashboard() }
     composable(Screen.AdminOrders.route) { OrderManagementScreen() }
     composable(Screen.AdminStaff.route) { StaffManagementScreen() }
     composable(Screen.AdminProducts.route) { InventoryManagementScreen() }
 }
 
-private fun NavGraphBuilder.addStaffRoutes(navController: NavHostController, authViewModel: AuthViewModel) {
+private fun NavGraphBuilder.addStaffRoutes() {
     composable(Screen.StaffDashboard.route) { StaffDashboard() }
     composable(Screen.StaffOrderLookup.route) { OrderLookupScreen(trackingId = null) }
 }
 
-private fun NavGraphBuilder.addDriverRoutes(navController: NavHostController, authViewModel: AuthViewModel) {
+private fun NavGraphBuilder.addDriverRoutes(navController: NavHostController) {
     composable(Screen.DriverDashboard.route) { DriverDashboard() }
     composable(Screen.DriverScan.route) {
         ScanPackageScreen(

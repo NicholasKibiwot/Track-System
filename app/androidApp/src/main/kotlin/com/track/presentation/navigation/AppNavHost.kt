@@ -20,9 +20,7 @@ import com.track.domain.models.UserRole
 import com.track.presentation.admin.AdminAddProductScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
-import com.track.presentation.customer.CartScreen
-import com.track.presentation.customer.CheckoutScreen
-import com.track.presentation.customer.ProfileScreen
+import com.track.presentation.customer.*
 // ← CustomerViewModel import REMOVED from here
 import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
@@ -85,17 +83,9 @@ private fun NavGraphBuilder.addPublicRoutes(
     composable(Screen.Home.route) {
         HomeScreen(
             onNavigateToCart = { navController.navigate(Screen.Cart.route) },
-            onNavigateToLogin = { navController.navigate(Screen.Login.route) },
             onNavigateToProfile = {
                 if (currentUser != null) {
                     navController.navigate(Screen.Profile.route)
-                } else {
-                    navController.navigate(Screen.Login.route)
-                }
-            },
-            onNavigateToMyOrders = {
-                if (currentUser != null && currentUser.role == UserRole.CUSTOMER) {
-                    navController.navigate(Screen.MyOrders.route)
                 } else {
                     navController.navigate(Screen.Login.route)
                 }
@@ -125,19 +115,35 @@ private fun NavGraphBuilder.addAuthRoutes(
     authViewModel: AppAuthViewModel,
 ) {
     composable(Screen.Login.route) {
-        LoginScreen(
-            viewModel = authViewModel,
-            onLoginSuccess = { _ ->
-                if (navController.previousBackStackEntry != null) {
-                    navController.popBackStack()
-                } else {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
+        CustomerLoginContainer(
+            webClientId = "582302215652-c2fovnjevegiplri3gdcst4d0gcm8eqa.apps.googleusercontent.com",
+            onProfileCompleted = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
                 }
             },
-            onNavigateToRegister = { navController.navigate(Screen.Register.route) },
-            onBackClick = { navController.popBackStack() },
+            onNavigateToCompleteProfile = { _ ->
+                // Still go to Home, but we could optionally flag that they need to complete it
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            },
+            authViewModel = authViewModel
+        )
+    }
+
+    composable(
+        route = "complete_profile/{uid}",
+        arguments = listOf(navArgument("uid") { type = NavType.StringType })
+    ) { backStackEntry ->
+        val uid = backStackEntry.arguments?.getString("uid") ?: return@composable
+        CustomerProfileCompletionScreen(
+            uid = uid,
+            onCompleted = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Login.route) { inclusive = true }
+                }
+            }
         )
     }
 
@@ -196,7 +202,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
         ProfileScreen(
             onBackClick = { navController.popBackStack() },
             onNavigateToOrders = { navController.navigate(Screen.MyOrders.route) },
-            onNavigateToEditProfile = { /* TODO */ },
+            onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
             onLogout = {
                 authViewModel.logout()
                 navController.navigate(Screen.Home.route) {
@@ -204,6 +210,14 @@ private fun NavGraphBuilder.addCustomerRoutes(
                 }
             },
             authViewModel = authViewModel
+        )
+    }
+
+    composable(Screen.EditProfile.route) {
+        EditProfileScreen(
+            onBackClick = { navController.popBackStack() },
+            onSaveSuccess = { navController.popBackStack() },
+            authViewModel = authViewModel,
         )
     }
 
