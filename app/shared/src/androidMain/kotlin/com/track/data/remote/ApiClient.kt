@@ -10,8 +10,14 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
+/**
+ * ApiClient configured for a physical phone connecting to a local PC server.
+ * If the server is unreachable, calls will fail quickly due to short timeouts,
+ * and the UI layer is configured to handle these failures gracefully.
+ */
 class ApiClient(
-    private val baseUrl: String = "http://${System.getenv("myapplication.ip") ?: "192.168.1.3"}:8080",
+    // Your PC IP address on the local network
+    private val baseUrl: String = "http://192.168.1.3:8080",
 ) {
     private val client =
         HttpClient(OkHttp) {
@@ -24,9 +30,9 @@ class ApiClient(
                 )
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 15000
-                connectTimeoutMillis = 15000
-                socketTimeoutMillis = 15000
+                requestTimeoutMillis = 3000 // Fast fail (3s) if server is unreachable
+                connectTimeoutMillis = 3000
+                socketTimeoutMillis = 3000
             }
             defaultRequest {
                 contentType(ContentType.Application.Json)

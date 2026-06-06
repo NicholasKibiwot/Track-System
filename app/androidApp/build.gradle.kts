@@ -19,6 +19,7 @@ kotlin {
 dependencies {
 
     implementation(platform(libs.firebase.bom))
+    implementation(libs.google.googleid)
     implementation(libs.play.services.auth)
     implementation(libs.kotlinx.datetime)
     implementation(libs.firebase.analytics)

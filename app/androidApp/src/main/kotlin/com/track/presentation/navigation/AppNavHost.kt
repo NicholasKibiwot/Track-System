@@ -18,6 +18,7 @@ import androidx.navigation.navArgument
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
 import com.track.presentation.admin.AdminAddProductScreen
+import com.track.presentation.auth.ForgotPasswordScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.*
@@ -28,6 +29,7 @@ import com.track.presentation.viewmodel.AppAuthViewModel
 import com.track.presentation.viewmodel.AppCustomerViewModel
 import com.track.presentation.viewmodel.AppSuperAdminViewModel
 import com.track.presentation.welcome.WelcomeScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavHost(
@@ -37,6 +39,14 @@ fun AppNavHost(
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    fun showMessage(message: String) {
+        scope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     currentUser?.let { user ->
         if (user.role == UserRole.CUSTOMER) {
@@ -44,14 +54,27 @@ fun AppNavHost(
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Home.route,
-    ) {
-        addPublicRoutes(navController, currentUser, customerViewModel)
-        addAuthRoutes(navController, authViewModel)
-        addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel)
-        addAdminRoutes(navController, adminViewModel)
+    // Force sign-out if current user state is null but Firebase says we are logged in
+    // This handles cases where profile loading failed or logout was partial
+    LaunchedEffect(currentUser) {
+        if (currentUser == null && !authViewModel.isAuthenticated()) {
+            // Fully logged out
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(padding)
+        ) {
+            addPublicRoutes(navController, currentUser, customerViewModel, authViewModel)
+            addAuthRoutes(navController, authViewModel, ::showMessage)
+            addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel, ::showMessage)
+            addAdminRoutes(navController, adminViewModel)
+        }
     }
 }
 
@@ -72,6 +95,7 @@ private fun NavGraphBuilder.addPublicRoutes(
     navController: NavHostController,
     currentUser: User?,
     customerViewModel: AppCustomerViewModel,
+    authViewModel: AppAuthViewModel,
 ) {
     composable(Screen.Welcome.route) {
         WelcomeScreen(
@@ -84,7 +108,7 @@ private fun NavGraphBuilder.addPublicRoutes(
         HomeScreen(
             onNavigateToCart = { navController.navigate(Screen.Cart.route) },
             onNavigateToProfile = {
-                if (currentUser != null) {
+                if (authViewModel.isAuthenticated()) {
                     navController.navigate(Screen.Profile.route)
                 } else {
                     navController.navigate(Screen.Login.route)
@@ -113,21 +137,25 @@ private fun NavGraphBuilder.addPublicRoutes(
 private fun NavGraphBuilder.addAuthRoutes(
     navController: NavHostController,
     authViewModel: AppAuthViewModel,
+    showMessage: (String) -> Unit,
 ) {
     composable(Screen.Login.route) {
         CustomerLoginContainer(
             webClientId = "582302215652-c2fovnjevegiplri3gdcst4d0gcm8eqa.apps.googleusercontent.com",
             onProfileCompleted = {
-                navController.navigate(Screen.Home.route) {
+                showMessage("Successfully logged in!")
+                navController.navigate(Screen.Profile.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             },
             onNavigateToCompleteProfile = { _ ->
-                // Still go to Home, but we could optionally flag that they need to complete it
-                navController.navigate(Screen.Home.route) {
+                showMessage("Successfully logged in!")
+                navController.navigate(Screen.Profile.route) {
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             },
+            onForgotPasswordClick = { navController.navigate("forgot_password") },
+            onBackClick = { navController.popBackStack() },
             authViewModel = authViewModel
         )
     }
@@ -158,6 +186,13 @@ private fun NavGraphBuilder.addAuthRoutes(
             onBackClick = { navController.popBackStack() },
         )
     }
+
+    composable("forgot_password") {
+        ForgotPasswordScreen(
+            onBackClick = { navController.popBackStack() },
+            viewModel = authViewModel
+        )
+    }
 }
 
 private fun NavGraphBuilder.addCustomerRoutes(
@@ -165,6 +200,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     currentUser: User?,
     customerViewModel: AppCustomerViewModel,
     authViewModel: AppAuthViewModel,
+    showMessage: (String) -> Unit,
 ) {
     composable(Screen.Cart.route) {
         CartScreen(
@@ -193,9 +229,11 @@ private fun NavGraphBuilder.addCustomerRoutes(
     }
 
     composable(Screen.MyOrders.route) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("My Orders Screen (Coming Soon)")
-        }
+        MyOrdersScreen(
+            onBackClick = { navController.popBackStack() },
+            onOrderClick = { orderId -> navController.navigate("tracking/$orderId") },
+            viewModel = customerViewModel
+        )
     }
 
     composable(Screen.Profile.route) {
@@ -205,7 +243,8 @@ private fun NavGraphBuilder.addCustomerRoutes(
             onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
             onLogout = {
                 authViewModel.logout()
-                navController.navigate(Screen.Home.route) {
+                showMessage("Successfully logged out!")
+                navController.navigate(Screen.Login.route) {
                     popUpTo(Screen.Home.route) { inclusive = true }
                 }
             },

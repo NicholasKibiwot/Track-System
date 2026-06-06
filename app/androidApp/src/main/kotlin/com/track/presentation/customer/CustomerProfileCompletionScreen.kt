@@ -55,7 +55,9 @@ fun CustomerProfileCompletionScreen(
                             api.updateUserProfile(uid, phone, address)
                             onCompleted()
                         } catch (e: Exception) {
-                            // Handle error
+                            // Non-fatal for now as requested
+                            android.util.Log.e("ProfileCompletion", "Failed to update profile on server", e)
+                            onCompleted()
                         } finally {
                             isLoading = false
                         }

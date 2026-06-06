@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -37,7 +38,9 @@ fun CustomerLoginScreen(
     webClientId: String,
     onLoggedIn: (idToken: String) -> Unit,
     onEmailSignIn: (String, String) -> Unit = { _, _ -> },
-    onEmailSignUp: (String, String) -> Unit = { _, _ -> }
+    onEmailSignUp: (String, String) -> Unit = { _, _ -> },
+    onForgotPasswordClick: () -> Unit = {},
+    onBackClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val activity = context as Activity
@@ -65,6 +68,20 @@ fun CustomerLoginScreen(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
+        if (onBackClick != null) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .statusBarsPadding()
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.White
+                )
+            }
+        }
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,7 +125,8 @@ fun CustomerLoginScreen(
                 } else {
                     RememberMeSection(
                         rememberMe = rememberMe,
-                        onRememberMeChange = { rememberMe = it }
+                        onRememberMeChange = { rememberMe = it },
+                        onForgotPasswordClick = onForgotPasswordClick
                     )
                 }
 
@@ -135,8 +153,6 @@ fun CustomerLoginScreen(
                 SocialLoginIcons(
                     scope = scope,
                     googleAuthManager = googleAuthManager,
-                    onStartLoading = { isLoading = true },
-                    onFinishLoading = { isLoading = false },
                     onLoggedIn = onLoggedIn,
                     onError = { error = it }
                 )
@@ -286,7 +302,11 @@ fun ConfirmPasswordField(
 }
 
 @Composable
-fun RememberMeSection(rememberMe: Boolean, onRememberMeChange: (Boolean) -> Unit) {
+fun RememberMeSection(
+    rememberMe: Boolean,
+    onRememberMeChange: (Boolean) -> Unit,
+    onForgotPasswordClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -306,10 +326,7 @@ fun RememberMeSection(rememberMe: Boolean, onRememberMeChange: (Boolean) -> Unit
             "Forgot Password?",
             fontSize = 12.sp,
             color = Color.Gray,
-            modifier = Modifier.clickable {
-                // TODO: Navigate to Forgot Password screen
-                Log.d("CustomerLogin", "Forgot Password clicked")
-            }
+            modifier = Modifier.clickable { onForgotPasswordClick() }
         )
     }
 }
@@ -337,8 +354,6 @@ fun SubmitButton(isSignInMode: Boolean, isLoading: Boolean, onClick: () -> Unit)
 fun SocialLoginIcons(
     scope: CoroutineScope,
     googleAuthManager: GoogleAuthManager,
-    onStartLoading: () -> Unit,
-    onFinishLoading: () -> Unit,
     onLoggedIn: (String) -> Unit,
     onError: (String) -> Unit
 ) {
@@ -351,14 +366,10 @@ fun SocialLoginIcons(
         SocialIcon(text = "G", color = Color(0xFFEA4335), onClick = {
             scope.launch {
                 try {
-                    onStartLoading()
-                    val idToken = googleAuthManager.signInWithCredentialManager()
+                    val idToken = googleAuthManager.signInWithGoogleAndGetFirebaseIdToken()
                     onLoggedIn(idToken)
                 } catch (e: Exception) {
-                    Log.e("CustomerLogin", "Sign in failed", e)
-                    onError("Sign in failed: ${e.localizedMessage}")
-                } finally {
-                    onFinishLoading()
+                    onError(e.message ?: "Google sign in failed")
                 }
             }
         })

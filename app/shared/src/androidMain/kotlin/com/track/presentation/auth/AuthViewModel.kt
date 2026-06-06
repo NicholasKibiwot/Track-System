@@ -2,6 +2,7 @@ package com.track.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.track.data.repository.FirestoreRepository
 import com.track.domain.models.User
@@ -35,6 +36,10 @@ open class AuthViewModel
                 auth.addAuthStateListener { firebaseAuth ->
                     val firebaseUser = firebaseAuth.currentUser
                     if (firebaseUser != null) {
+                        // If we already have a user with the same ID, don't necessarily overwrite 
+                        // until loadUserProfile completes, but we need some state here.
+                        // Actually, if we're "logged in" in Firebase but profile isn't loaded yet,
+                        // we might want a temporary placeholder or wait.
                         loadUserProfile(firebaseUser.uid)
                     } else {
                         _currentUser.value = null
@@ -59,18 +64,13 @@ open class AuthViewModel
                 try {
                     val result = auth.signInWithEmailAndPassword(email, password).await()
                     val uid = result.user?.uid ?: throw Exception("Login failed.")
-                    val user = repository.getUser(uid) ?: throw Exception("User profile not found.")
+                    
+                    // Force refresh profile immediately
+                    val user = repository.getUser(uid) ?: createDefaultProfile(uid, email)
 
                     if (expectedRole != null && user.role != expectedRole && expectedRole != UserRole.STAFF) {
-                        // Note: If expectedRole is STAFF, we might allow DRIVER and SUPER_ADMIN too if it's a generic staff login
-                        // But if it's strictly CUSTOMER, we block others.
                         auth.signOut()
                         throw Exception("This account is not authorized for this login.")
-                    }
-
-                    if (expectedRole == UserRole.STAFF && user.role == UserRole.CUSTOMER) {
-                        auth.signOut()
-                        throw Exception("Customer accounts cannot use the staff login.")
                     }
 
                     repository.updateUserOnlineStatus(uid, true)
@@ -82,6 +82,12 @@ open class AuthViewModel
                     _isLoading.value = false
                 }
             }
+        }
+
+        private suspend fun createDefaultProfile(uid: String, email: String): User {
+            val newUser = User(id = uid, email = email, name = email.split("@")[0], role = UserRole.CUSTOMER)
+            repository.createUser(newUser)
+            return newUser
         }
 
         fun register(
@@ -118,17 +124,39 @@ open class AuthViewModel
         }
 
         fun logout() {
-            val uid = auth.currentUser?.uid
             viewModelScope.launch {
-                if (uid != null) {
-                    repository.updateUserOnlineStatus(uid, false)
+                try {
+                    val uid = auth.currentUser?.uid
+                    if (uid != null) {
+                        repository.updateUserOnlineStatus(uid, false)
+                    }
+                } catch (e: Exception) {
+                    // Ignore status update errors on logout
+                } finally {
+                    auth.signOut()
+                    _currentUser.value = null
                 }
-                auth.signOut()
-                _currentUser.value = null
             }
         }
 
         fun isAuthenticated(): Boolean = auth.currentUser != null
+
+        fun refreshProfile(idToken: String? = null) {
+            val firebaseUser = auth.currentUser ?: return
+            viewModelScope.launch {
+                try {
+                    val user = repository.getUser(firebaseUser.uid)
+                    if (user == null) {
+                        createDefaultProfile(firebaseUser.uid, firebaseUser.email ?: "User")
+                    } else {
+                        repository.updateUserOnlineStatus(firebaseUser.uid, true)
+                        _currentUser.value = user
+                    }
+                } catch (e: Exception) {
+                    Log.e("AuthViewModel", "Failed to refresh profile", e)
+                }
+            }
+        }
 
         fun clearError() {
             _errorMessage.value = null
@@ -148,29 +176,38 @@ open class AuthViewModel
             }
         }
 
-        fun updateProfile(
-            name: String,
-            phone: String,
-            shippingAddress: String,
-            onSuccess: () -> Unit,
-            onError: (String) -> Unit,
-        ) {
-            val uid = auth.currentUser?.uid ?: return onError("Not logged in.")
-            viewModelScope.launch {
-                _isLoading.value = true
-                _errorMessage.value = null
-                try {
-                    repository.updateUserProfile(uid, name, phone, shippingAddress)
-                    // Refresh the local state
-                    val updated = repository.getUser(uid)
-                    if (updated != null) _currentUser.value = updated
-                    _isLoading.value = false
-                    onSuccess()
-                } catch (e: Exception) {
-                    _errorMessage.value = e.localizedMessage ?: "Update failed."
-                    _isLoading.value = false
-                    onError(_errorMessage.value ?: "Update failed.")
-                }
+    fun updateProfile(
+        name: String,
+        phone: String,
+        shippingAddress: String,
+        dob: String = "",
+        country: String = "",
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit,
+    ) {
+        val uid = auth.currentUser?.uid ?: return onError("Not logged in.")
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+                repository.updateUserProfile(
+                    userId = uid,
+                    name = name,
+                    phone = phone,
+                    shippingAddress = shippingAddress,
+                    dob = dob,
+                    country = country
+                )
+                // Refresh the local state
+                val updated = repository.getUser(uid)
+                if (updated != null) _currentUser.value = updated
+                _isLoading.value = false
+                onSuccess()
+            } catch (e: Exception) {
+                _errorMessage.value = e.localizedMessage ?: "Update failed."
+                _isLoading.value = false
+                onError(_errorMessage.value ?: "Update failed.")
             }
         }
+    }
     }

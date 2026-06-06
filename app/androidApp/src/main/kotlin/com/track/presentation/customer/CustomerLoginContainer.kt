@@ -17,6 +17,8 @@ fun CustomerLoginContainer(
     webClientId: String,
     onProfileCompleted: () -> Unit,
     onNavigateToCompleteProfile: (uid: String) -> Unit,
+    onForgotPasswordClick: () -> Unit = {},
+    onBackClick: () -> Unit,
     authViewModel: AppAuthViewModel
 ) {
     val scope = rememberCoroutineScope()
@@ -27,27 +29,24 @@ fun CustomerLoginContainer(
     Box(modifier = Modifier.fillMaxSize()) {
         CustomerLoginScreen(
             webClientId = webClientId,
+            onBackClick = onBackClick,
+            onForgotPasswordClick = onForgotPasswordClick,
             onLoggedIn = { idToken ->
                 scope.launch {
                     try {
                         isSyncing = true
                         error = null
                         Log.d("LoginContainer", "Syncing user with backend...")
-                        val profile = api.syncUser(idToken)
-                        Log.d("LoginContainer", "User synced successfully: $profile")
+                        val profile = try { api.syncUser(idToken) } catch (e: Exception) { null }
+                        Log.d("LoginContainer", "User synced: $profile")
                         
-                        val uid = profile["uid"] as? String
-                        val phone = profile["phoneNumber"] as? String
-                        val address = profile["address"] as? String
-                        
-                        if (uid != null && (phone.isNullOrBlank() || address.isNullOrBlank())) {
-                            onNavigateToCompleteProfile(uid)
-                        } else {
-                            onProfileCompleted()
-                        }
+                        // If backend sync fails, ensure we still have a profile in Firestore
+                        authViewModel.refreshProfile(idToken)
+
+                        onProfileCompleted()
                     } catch (e: Exception) {
-                        Log.e("LoginContainer", "Error during user sync", e)
-                        error = "Sync Failed: ${e.localizedMessage ?: "Check server connection"}"
+                        Log.e("LoginContainer", "Login failed", e)
+                        error = "Login Failed: ${e.localizedMessage}"
                     } finally {
                         isSyncing = false
                     }

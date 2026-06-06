@@ -298,21 +298,25 @@ class FirestoreRepository
             }
 
         suspend fun updateUserProfile(
-            userId: String,
-            name: String,
-            phone: String,
-            shippingAddress: String,
-        ) {
-            db
-                .collection("users")
-                .document(userId)
-                .update(
-                    "name",
-                    name,
-                    "phone",
-                    phone,
-                    "shippingAddress",
-                    shippingAddress,
-                ).await()
-        }
+        userId: String,
+        name: String,
+        phone: String,
+        shippingAddress: String,
+        dob: String = "",
+        country: String = ""
+    ) {
+        db
+            .collection("users")
+            .document(userId)
+            .update(
+                mapOf(
+                    "displayName" to name,
+                    "phoneNumber" to phone,
+                    "shippingAddress" to shippingAddress,
+                    "dob" to dob,
+                    "country" to country
+                )
+            ).await()
+    }
+
     }
