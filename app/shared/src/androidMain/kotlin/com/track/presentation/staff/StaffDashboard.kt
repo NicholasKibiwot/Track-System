@@ -1,9 +1,12 @@
 package com.track.presentation.staff
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -18,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaffDashboard(
     viewModel: StaffViewModel = hiltViewModel()
@@ -26,12 +30,23 @@ fun StaffDashboard(
     val lookupResult by viewModel.lookupResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
+    val orders by viewModel.orders.collectAsState()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Help Desk - Order Tracking") },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black, titleContentColor = Color.White)
+                title = { 
+                    Column {
+                        Text("Staff Dashboard", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                        Text("Order Management System", style = MaterialTheme.typography.bodySmall, color = Color.White.copy(alpha = 0.7f))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1A1C1E), titleContentColor = Color.White),
+                actions = {
+                    IconButton(onClick = { /* Profile */ }) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White)
+                    }
+                }
             )
         }
     ) { padding ->
@@ -39,28 +54,71 @@ fun StaffDashboard(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .background(Color(0xFFF8F9FA))
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp)
         ) {
-            // Search Section
-            Text("Enter Item ID / Tracking Number", fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
+            // Stats Overview
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                StatCard(
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("e.g. TRK-9921") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(8.dp)
+                    title = "Total",
+                    value = orders.size.toString(),
+                    containerColor = Color.White,
+                    contentColor = Color.Black
                 )
-                Spacer(Modifier.width(8.dp))
-                Button(
-                    onClick = { viewModel.lookupOrder(searchQuery) },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.height(56.dp)
-                ) {
-                    if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    else Icon(Icons.Default.Search, contentDescription = null)
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Pending",
+                    value = orders.count { it.orderStatus == OrderStatus.PENDING || it.orderStatus == OrderStatus.PROCESSING }.toString(),
+                    containerColor = Color(0xFFFFF4E5),
+                    contentColor = Color(0xFFFF9800)
+                )
+                StatCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Delivered",
+                    value = orders.count { it.orderStatus == OrderStatus.DELIVERED }.toString(),
+                    containerColor = Color(0xFFE8F5E9),
+                    contentColor = Color(0xFF4CAF50)
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            // Search Section
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White,
+                shadowElevation = 2.dp
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Search & Lookup", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Spacer(Modifier.height(12.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Enter Tracking ID") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = { viewModel.lookupOrder(searchQuery) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.height(56.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1C1E))
+                        ) {
+                            if (isLoading) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                            else Text("Search")
+                        }
+                    }
                 }
             }
 
@@ -73,17 +131,52 @@ fun StaffDashboard(
 
             // Results Section
             lookupResult?.let { order ->
+                Text("Lookup Result", fontWeight = FontWeight.Bold, fontSize = 16.sp, modifier = Modifier.padding(bottom = 12.dp))
                 OrderDetailsCard(
                     order = order,
                     onUpdateStatus = { newStatus -> viewModel.updateOrderStatus(order.id, newStatus) }
                 )
             } ?: run {
                 if (!isLoading) {
-                    Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                        Text("No order selected. Enter an ID to begin.", color = Color.Gray)
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.FindInPage, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.LightGray)
+                            Spacer(Modifier.height(8.dp))
+                            Text("No order selected", color = Color.Gray)
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun StatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    containerColor: Color,
+    contentColor: Color
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = containerColor,
+        shadowElevation = 2.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = title, fontSize = 12.sp, color = contentColor.copy(alpha = 0.7f))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = value, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, color = contentColor)
         }
     }
 }
