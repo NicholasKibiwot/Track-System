@@ -148,12 +148,6 @@ private fun NavGraphBuilder.addAuthRoutes(
                     popUpTo(Screen.Login.route) { inclusive = true }
                 }
             },
-            onNavigateToCompleteProfile = { _ ->
-                showMessage("Successfully logged in!")
-                navController.navigate(Screen.Profile.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
-                }
-            },
             onForgotPasswordClick = { navController.navigate("forgot_password") },
             onBackClick = { navController.popBackStack() },
             authViewModel = authViewModel

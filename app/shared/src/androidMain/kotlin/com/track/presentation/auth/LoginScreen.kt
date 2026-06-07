@@ -29,7 +29,6 @@ fun LoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -62,8 +61,6 @@ fun LoginScreen(
                     password = it
                     viewModel.clearError()
                 },
-                passwordVisible = passwordVisible,
-                onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
                 isLoading = isLoading,
                 errorMessage = errorMessage
             )
@@ -139,11 +136,11 @@ private fun LoginForm(
     onEmailChange: (String) -> Unit,
     password: String,
     onPasswordChange: (String) -> Unit,
-    passwordVisible: Boolean,
-    onPasswordVisibilityToggle: () -> Unit,
     isLoading: Boolean,
     errorMessage: String?
 ) {
+    var passwordVisible by remember { mutableStateOf(false) }
+
     OutlinedTextField(
         value = email,
         onValueChange = onEmailChange,
@@ -168,7 +165,7 @@ private fun LoginForm(
             PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         trailingIcon = {
-            IconButton(onClick = onPasswordVisibilityToggle) {
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
                 Icon(
                     imageVector = if (passwordVisible)
                         Icons.Default.VisibilityOff

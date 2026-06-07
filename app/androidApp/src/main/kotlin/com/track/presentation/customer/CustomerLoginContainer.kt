@@ -16,7 +16,6 @@ import kotlinx.coroutines.launch
 fun CustomerLoginContainer(
     webClientId: String,
     onProfileCompleted: () -> Unit,
-    onNavigateToCompleteProfile: (uid: String) -> Unit,
     onForgotPasswordClick: () -> Unit = {},
     onBackClick: () -> Unit,
     authViewModel: AppAuthViewModel

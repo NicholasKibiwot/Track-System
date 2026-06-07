@@ -16,9 +16,16 @@ import kotlinx.serialization.json.Json
  * and the UI layer is configured to handle these failures gracefully.
  */
 class ApiClient(
-    // Your PC IP address on the local network
-    private val baseUrl: String = "http://192.168.1.3:8080",
+    // Base URL is read from environment variables or system properties for compliance.
+    // In production, this should be injected via a build-time configuration.
+    private val baseUrl: String = System.getenv("API_BASE_URL") 
+        ?: System.getProperty("api.base_url") 
+        ?: DEFAULT_BASE_URL,
 ) {
+    companion object {
+        private const val DEFAULT_BASE_URL = "http://192.168.1.3:8080"
+    }
+
     private val client =
         HttpClient(OkHttp) {
             install(ContentNegotiation) {
