@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
@@ -13,7 +12,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.DirectionsRun
+import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Watch
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
@@ -39,15 +49,15 @@ fun HomeScreen(
     onNavigateToCart: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
-    viewModel: AppCustomerViewModel = hiltViewModel()
+    viewModel: AppCustomerViewModel = hiltViewModel(),
 ) {
     val products by viewModel.products.collectAsState()
     
     val categories = listOf(
         CategoryItem("Clothes", Icons.Default.Checkroom, Color(0xFFFFEBEE)),
         CategoryItem("Electronics", Icons.Default.Devices, Color(0xFFE3F2FD)),
-        CategoryItem("Shoes", Icons.Default.DirectionsRun, Color(0xFFE8F5E9)),
-        CategoryItem("Watch", Icons.Default.Watch, Color(0xFFFFF3E0))
+        CategoryItem("Shoes", Icons.AutoMirrored.Filled.DirectionsRun, Color(0xFFE8F5E9)),
+        CategoryItem("Watch", Icons.Default.Watch, Color(0xFFFFF3E0)),
     )
 
     Scaffold(
@@ -72,7 +82,7 @@ fun HomeScreen(
                     onClick = onNavigateToCart
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Chat, contentDescription = null) },
+                    icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null) },
                     label = { Text("Chat") },
                     selected = false,
                     onClick = { }
@@ -245,8 +255,7 @@ fun HomeScreen(
                             ProductCard(
                                 product = product,
                                 modifier = Modifier.weight(1f),
-                                onClick = { onNavigateToProductDetails(product.id) }
-                            )
+                            ) { onNavigateToProductDetails(product.id) }
                         }
                         if (rowProducts.size == 1) {
                             Spacer(modifier = Modifier.weight(1f))

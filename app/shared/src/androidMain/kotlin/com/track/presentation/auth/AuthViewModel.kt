@@ -68,9 +68,31 @@ open class AuthViewModel
                     // Force refresh profile immediately
                     val user = repository.getUser(uid) ?: createDefaultProfile(uid, email)
 
-                    if (expectedRole != null && user.role != expectedRole && expectedRole != UserRole.STAFF) {
-                        auth.signOut()
-                        throw Exception("This account is not authorized for this login.")
+                    // Robust role check:
+                    // 1. If no expectedRole, anyone can login (e.g. general refresh).
+                    // 2. If expectedRole is CUSTOMER, only CUSTOMERs.
+                    // 3. If expectedRole is STAFF, allow any internal role (STAFF, DRIVER, SUPER_ADMIN).
+                    if (expectedRole != null) {
+                        when (expectedRole) {
+                            UserRole.CUSTOMER -> {
+                                if (user.role != UserRole.CUSTOMER) {
+                                    auth.signOut()
+                                    throw Exception("Please use a customer account to log in here.")
+                                }
+                            }
+                            UserRole.STAFF -> {
+                                if (user.role == UserRole.CUSTOMER) {
+                                    auth.signOut()
+                                    throw Exception("Access denied. This portal is for staff only.")
+                                }
+                            }
+                            else -> {
+                                if (user.role != expectedRole) {
+                                    auth.signOut()
+                                    throw Exception("Insufficient permissions for this role.")
+                                }
+                            }
+                        }
                     }
 
                     repository.updateUserOnlineStatus(uid, true)

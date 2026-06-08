@@ -34,7 +34,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.data.FakeData
 import com.track.domain.models.Order
 import com.track.domain.models.OrderItem
-import com.track.presentation.staff.StaffViewModel
 
 @Composable
 fun OrderLookupScreen(
@@ -298,7 +297,7 @@ fun OrderLookupResult(order: Order) {
 @Preview(showBackground = true)
 @Composable
 fun OrderLookupScreenPreview() {
-    Column(Modifier.padding(16.dp)) {
-        OrderLookupResult(order = FakeData.previewOrder)
+    MaterialTheme {
+        OrderLookupScreen()
     }
 }

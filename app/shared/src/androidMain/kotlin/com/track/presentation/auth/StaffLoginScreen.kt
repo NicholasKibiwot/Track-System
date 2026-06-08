@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.UserRole
@@ -27,9 +28,9 @@ import com.track.domain.models.UserRole
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaffLoginScreen(
-    onLoginSuccess: (role: String) -> Unit,
-    onBackClick: () -> Unit,
-    viewModel: AuthViewModel,
+    onLoginSuccess: (role: String) -> Unit = {},
+    onBackClick: () -> Unit = {},
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -189,6 +190,14 @@ fun StaffLoginScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun StaffLoginScreenPreview() {
+    MaterialTheme {
+        StaffLoginScreen()
     }
 }
 

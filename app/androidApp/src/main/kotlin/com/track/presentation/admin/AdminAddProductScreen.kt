@@ -1,25 +1,49 @@
 package com.track.presentation.admin
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.Product
 import com.track.presentation.viewmodel.AppSuperAdminViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminAddProductScreen(
-    viewModel: AppSuperAdminViewModel,
-    onBackClick: () -> Unit,
-    onProductAdded: () -> Unit
+    viewModel: AppSuperAdminViewModel = hiltViewModel(),
+    onBackClick: () -> Unit = {},
+    onProductAdded: () -> Unit = {},
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -38,25 +62,26 @@ fun AdminAddProductScreen(
                 title = { Text("Add New Product") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding)
-                .padding(16.dp)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .padding(padding)
+                    .padding(16.dp)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
                 label = { Text("Product Name") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             OutlinedTextField(
@@ -64,7 +89,7 @@ fun AdminAddProductScreen(
                 onValueChange = { description = it },
                 label = { Text("Description") },
                 modifier = Modifier.fillMaxWidth(),
-                minLines = 3
+                minLines = 3,
             )
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -73,14 +98,14 @@ fun AdminAddProductScreen(
                     onValueChange = { price = it },
                     label = { Text("Price ($)") },
                     modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 )
                 OutlinedTextField(
                     value = stock,
                     onValueChange = { stock = it },
                     label = { Text("Stock") },
                     modifier = Modifier.weight(1f),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
 
@@ -88,53 +113,55 @@ fun AdminAddProductScreen(
                 value = category,
                 onValueChange = { category = it },
                 label = { Text("Category") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             OutlinedTextField(
                 value = imageUrl,
                 onValueChange = { imageUrl = it },
                 label = { Text("Image URL") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             OutlinedTextField(
                 value = sizes,
                 onValueChange = { sizes = it },
                 label = { Text("Sizes (comma separated: S,M,L)") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             OutlinedTextField(
                 value = colors,
                 onValueChange = { colors = it },
                 label = { Text("Colors (comma separated Hex: #FF0000,#00FF00)") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = {
-                    val newProduct = Product(
-                        name = name,
-                        description = description,
-                        price = price.toDoubleOrNull() ?: 0.0,
-                        category = category,
-                        stock = stock.toIntOrNull() ?: 0,
-                        imageUrl = imageUrl,
-                        sizes = sizes.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-                        colors = colors.split(",").map { it.trim() }.filter { it.isNotEmpty() },
-                        rating = 4.5 // Default for new items
-                    )
+                    val newProduct =
+                        Product(
+                            name = name,
+                            description = description,
+                            price = price.toDoubleOrNull() ?: 0.0,
+                            category = category,
+                            stock = stock.toIntOrNull() ?: 0,
+                            imageUrl = imageUrl,
+                            sizes = sizes.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                            colors = colors.split(",").map { it.trim() }.filter { it.isNotEmpty() },
+                            rating = 4.5, // Default for new items
+                        )
                     viewModel.createProduct(newProduct) {
                         onProductAdded()
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = name.isNotBlank() && price.isNotBlank() && !isLoading
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                enabled = name.isNotBlank() && price.isNotBlank() && !isLoading,
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
@@ -143,5 +170,13 @@ fun AdminAddProductScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminAddProductScreenPreview() {
+    MaterialTheme {
+        AdminAddProductScreen()
     }
 }

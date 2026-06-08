@@ -23,19 +23,41 @@ import com.track.presentation.driver.DriverDashboard
 import com.track.presentation.driver.ScanPackageScreen
 import com.track.presentation.staff.OrderLookupScreen
 import com.track.presentation.staff.StaffDashboard
+import com.track.staff.presentation.auth.TemporaryLoginScreen
+import com.track.staff.presentation.viewmodel.AppDriverViewModel
+import com.track.staff.presentation.viewmodel.AppStaffViewModel
+import com.track.staff.presentation.viewmodel.AppSuperAdminViewModel
 import com.track.staff.presentation.viewmodel.StaffAuthViewModel
 
 @Composable
 fun StaffNavHost(
-    authViewModel: StaffAuthViewModel = hiltViewModel()
+    authViewModel: StaffAuthViewModel = hiltViewModel(),
+    adminViewModel: AppSuperAdminViewModel = hiltViewModel(),
+    staffViewModel: AppStaffViewModel = hiltViewModel(),
+    driverViewModel: AppDriverViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
+    
+    val onLogout = {
+        // Redirect back to debug portal instead of real login
+        navController.navigate("temp_login") {
+            popUpTo(0) { inclusive = true }
+        }
+    }
 
     NavHost(
         navController = navController,
-        startDestination = if (currentUser == null) Screen.StaffLogin.route else getStartDestination(currentUser?.role?.name),
+        startDestination = "temp_login",
     ) {
+        composable("temp_login") {
+            TemporaryLoginScreen(
+                onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) },
+                onNavigateToStaff = { navController.navigate(Screen.StaffDashboard.route) },
+                onNavigateToDriver = { navController.navigate(Screen.DriverDashboard.route) }
+            )
+        }
+
         composable(Screen.StaffLogin.route) {
             StaffLoginScreen(
                 viewModel = authViewModel,
@@ -48,9 +70,9 @@ fun StaffNavHost(
             )
         }
 
-        addAdminRoutes()
-        addStaffRoutes()
-        addDriverRoutes(navController)
+        addAdminRoutes(adminViewModel, onLogout)
+        addStaffRoutes(staffViewModel, onLogout)
+        addDriverRoutes(navController, driverViewModel, onLogout)
     }
 }
 
@@ -63,20 +85,48 @@ private fun getStartDestination(role: String?): String {
     }
 }
 
-private fun NavGraphBuilder.addAdminRoutes() {
-    composable(Screen.AdminDashboard.route) { AdminDashboard() }
-    composable(Screen.AdminOrders.route) { OrderManagementScreen() }
-    composable(Screen.AdminStaff.route) { StaffManagementScreen() }
-    composable(Screen.AdminProducts.route) { InventoryManagementScreen() }
+private fun NavGraphBuilder.addAdminRoutes(
+    viewModel: AppSuperAdminViewModel,
+    onLogout: () -> Unit
+) {
+    composable(Screen.AdminDashboard.route) { 
+        AdminDashboard(viewModel = viewModel, onLogout = onLogout)
+    }
+    composable(Screen.AdminOrders.route) { 
+        OrderManagementScreen(viewModel = viewModel) 
+    }
+    composable(Screen.AdminStaff.route) { 
+        StaffManagementScreen(viewModel = viewModel) 
+    }
+    composable(Screen.AdminProducts.route) { 
+        InventoryManagementScreen(viewModel = viewModel) 
+    }
 }
 
-private fun NavGraphBuilder.addStaffRoutes() {
-    composable(Screen.StaffDashboard.route) { StaffDashboard() }
-    composable(Screen.StaffOrderLookup.route) { OrderLookupScreen(trackingId = null) }
+private fun NavGraphBuilder.addStaffRoutes(
+    viewModel: AppStaffViewModel,
+    onLogout: () -> Unit
+) {
+    composable(Screen.StaffDashboard.route) { 
+        StaffDashboard(viewModel = viewModel, onLogout = onLogout) 
+    }
+    composable(Screen.StaffOrderLookup.route) { 
+        OrderLookupScreen(viewModel = viewModel, trackingId = null) 
+    }
 }
 
-private fun NavGraphBuilder.addDriverRoutes(navController: NavHostController) {
-    composable(Screen.DriverDashboard.route) { DriverDashboard() }
+private fun NavGraphBuilder.addDriverRoutes(
+    navController: NavHostController,
+    viewModel: AppDriverViewModel,
+    onLogout: () -> Unit
+) {
+    composable(Screen.DriverDashboard.route) {
+        DriverDashboard(
+            viewModel = viewModel,
+            onScanPackage = { navController.navigate(Screen.DriverScan.route) },
+            onLogout = onLogout
+        )
+    }
     composable(Screen.DriverScan.route) {
         ScanPackageScreen(
             onScanSuccess = { _ -> /* Logic */ },

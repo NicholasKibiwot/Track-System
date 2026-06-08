@@ -10,13 +10,23 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.track.presentation.navigation.AppNavHost
 import com.track.ui.theme.AppTheme
+import com.track.util.FirebaseInitializer
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var firebaseInitializer: FirebaseInitializer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // One-time setup for internal accounts (Admin, Staff, Driver)
+        firebaseInitializer.initializeInternalUsers()
+
         setContent {
             AppTheme {
                 Surface(

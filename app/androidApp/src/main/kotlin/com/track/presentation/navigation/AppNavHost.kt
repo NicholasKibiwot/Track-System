@@ -22,7 +22,6 @@ import com.track.presentation.auth.ForgotPasswordScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.*
-// ← CustomerViewModel import REMOVED from here
 import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
 import com.track.presentation.viewmodel.AppAuthViewModel
@@ -55,7 +54,6 @@ fun AppNavHost(
     }
 
     // Force sign-out if current user state is null but Firebase says we are logged in
-    // This handles cases where profile loading failed or logout was partial
     LaunchedEffect(currentUser) {
         if (currentUser == null && !authViewModel.isAuthenticated()) {
             // Fully logged out

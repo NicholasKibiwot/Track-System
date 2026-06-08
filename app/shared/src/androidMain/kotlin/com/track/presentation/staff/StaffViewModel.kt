@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class StaffViewModel
+open class StaffViewModel
     @Inject
     constructor(
         private val repository: FirestoreRepository,

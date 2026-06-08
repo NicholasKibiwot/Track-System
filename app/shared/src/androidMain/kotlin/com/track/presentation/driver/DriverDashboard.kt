@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +30,7 @@ import com.track.domain.models.OrderStatus
 fun DriverDashboard(
     viewModel: DriverViewModel = hiltViewModel(),
     onScanPackage: () -> Unit = {},
+    onLogout: () -> Unit = {},
 ) {
     val assignedOrders by viewModel.assignedOrders.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -46,6 +48,9 @@ fun DriverDashboard(
                 actions = {
                     IconButton(onClick = onScanPackage) {
                         Icon(Icons.Default.QrCodeScanner, contentDescription = "Scan", tint = Color.White)
+                    }
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color.White)
                     }
                 }
             )

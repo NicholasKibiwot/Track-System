@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ListAlt
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.People
@@ -15,12 +16,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminDashboard() {
+fun AdminDashboard(
+    viewModel: SuperAdminViewModel = hiltViewModel(),
+    onLogout: () -> Unit = {}
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val menuItems = listOf(
         AdminMenuItem("Inventory", Icons.Default.Inventory),
@@ -38,7 +44,12 @@ fun AdminDashboard() {
                         Text("Admin Control Panel", fontWeight = FontWeight.Bold)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1A1C1E), titleContentColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFF1A1C1E), titleContentColor = Color.White),
+                actions = {
+                    IconButton(onClick = onLogout) {
+                        Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Logout", tint = Color.White)
+                    }
+                }
             )
         },
         bottomBar = {
@@ -66,11 +77,19 @@ fun AdminDashboard() {
                 .background(Color(0xFFF8F9FA))
         ) {
             when (selectedTab) {
-                0 -> InventoryManagementScreen()
-                1 -> OrderManagementScreen()
-                2 -> StaffManagementScreen()
+                0 -> InventoryManagementScreen(viewModel = viewModel)
+                1 -> OrderManagementScreen(viewModel = viewModel)
+                2 -> StaffManagementScreen(viewModel = viewModel)
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AdminDashboardPreview() {
+    MaterialTheme {
+        AdminDashboard()
     }
 }
 
