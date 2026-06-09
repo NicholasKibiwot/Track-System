@@ -15,10 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.domain.models.User
+import com.track.domain.models.UserRole
 
 @Composable
 fun StaffManagementScreen(
@@ -29,7 +31,11 @@ fun StaffManagementScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = { showAddStaffDialog = true }) {
+            FloatingActionButton(
+                onClick = { showAddStaffDialog = true },
+                containerColor = Color(0xFF1A1C1E),
+                contentColor = Color.White
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Staff")
             }
         }
@@ -40,7 +46,8 @@ fun StaffManagementScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text("Manage Company Staff", style = MaterialTheme.typography.titleLarge)
+                Text("Manage Company Staff", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Drivers and branch staff members", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                 Spacer(Modifier.height(8.dp))
             }
             items(staffUsers) { staff ->
@@ -53,14 +60,58 @@ fun StaffManagementScreen(
     }
 
     if (showAddStaffDialog) {
-        // Simple dialog for UI demo
-        AlertDialog(
-            onDismissRequest = { showAddStaffDialog = false },
-            title = { Text("Add New Staff") },
-            text = { Text("This would open a form to create a new staff account.") },
-            confirmButton = { Button(onClick = { showAddStaffDialog = false }) { Text("OK") } }
+        AddStaffDialog(
+            onDismiss = { showAddStaffDialog = false },
+            onConfirm = { newUser ->
+                viewModel.createUser(newUser)
+                showAddStaffDialog = false
+            }
         )
     }
+}
+
+@Composable
+fun AddStaffDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (User) -> Unit
+) {
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var branch by remember { mutableStateOf("") }
+    var role by remember { mutableStateOf(UserRole.STAFF) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Register New Staff") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Full Name") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = email, onValueChange = { email = it }, label = { Text("Email Address") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = branch, onValueChange = { branch = it }, label = { Text("Branch Location") }, modifier = Modifier.fillMaxWidth())
+                
+                Text("Role", style = MaterialTheme.typography.labelLarge)
+                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = role == UserRole.STAFF, onClick = { role = UserRole.STAFF })
+                        Text("Staff")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = role == UserRole.DRIVER, onClick = { role = UserRole.DRIVER })
+                        Text("Driver")
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    onConfirm(User(name = name, email = email, branch = branch, role = role))
+                },
+                enabled = name.isNotBlank() && email.isNotBlank() && branch.isNotBlank()
+            ) { Text("Create Account") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
+    )
 }
 
 @Composable
@@ -85,18 +136,23 @@ fun StaffMemberCard(staff: User, onToggleActive: () -> Unit) {
             Spacer(Modifier.width(16.dp))
             
             Column(Modifier.weight(1f)) {
-                Text(staff.name, style = MaterialTheme.typography.titleMedium)
+                Text(staff.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(staff.email, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Text(staff.role.name, fontSize = 10.sp, color = MaterialTheme.colorScheme.primary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(staff.role.name, fontSize = 10.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                    Text(" • ", fontSize = 10.sp, color = Color.Gray)
+                    Text(staff.branch.ifBlank { "Unassigned Branch" }, fontSize = 10.sp, color = Color.Gray)
+                }
             }
             
-            IconButton(onClick = onToggleActive) {
-                Icon(
-                    if (staff.isActive) Icons.Default.Person else Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = if (staff.isActive) Color.Gray else Color.Red
+            Switch(
+                checked = staff.isActive,
+                onCheckedChange = { onToggleActive() },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF4CAF50),
+                    checkedTrackColor = Color(0xFF4CAF50).copy(alpha = 0.5f)
                 )
-            }
+            )
         }
     }
 }

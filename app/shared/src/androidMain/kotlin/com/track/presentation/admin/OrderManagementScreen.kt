@@ -148,7 +148,15 @@ fun AdminOrderCard(order: Order) {
 private fun OrderCardDetails(order: Order) {
     Row(Modifier.fillMaxWidth()) {
         Text("Tracking number: ", color = Color.Gray)
-        Text(order.id, fontWeight = FontWeight.Medium)
+        Text(order.trackingNumber.ifBlank { order.id }, fontWeight = FontWeight.Medium)
+    }
+
+    val branches = order.items.map { it.branch }.distinct().filter { it.isNotBlank() }
+    if (branches.isNotEmpty()) {
+        Row(Modifier.fillMaxWidth()) {
+            Text("From Branch: ", color = Color.Gray)
+            Text(branches.joinToString(", "), fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+        }
     }
     
     Row(

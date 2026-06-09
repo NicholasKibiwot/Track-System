@@ -15,6 +15,7 @@ data class User(
     val dob: String = "",
     val country: String = "",
     val profilePictureUrl: String = "",
+    val branch: String = "", // Added branch location
     val createdAt: Timestamp = Timestamp.now(),
     val isActive: Boolean = true,
     val isOnline: Boolean = false,

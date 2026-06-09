@@ -272,6 +272,17 @@ class FirestoreRepository
                 .await()
         }
 
+        suspend fun updateProductStock(
+            productId: String,
+            newStock: Int,
+        ) {
+            db
+                .collection("products")
+                .document(productId)
+                .update("stock", newStock)
+                .await()
+        }
+
         suspend fun getOrderById(orderId: String): Order? =
             try {
                 db

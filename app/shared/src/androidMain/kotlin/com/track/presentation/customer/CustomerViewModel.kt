@@ -240,6 +240,7 @@ open class CustomerViewModel
                                 productName = cartItem.product.name,
                                 quantity = cartItem.quantity,
                                 unitPrice = cartItem.product.price,
+                                branch = cartItem.product.branch, // Carry branch info from product
                                 imageUrl = cartItem.product.imageUrl.ifBlank { null },
                             )
                         }
@@ -269,7 +270,15 @@ open class CustomerViewModel
                             updatedAt = Timestamp.now(),
                         )
 
+                    // 1. Create the order
                     val orderId = repository.createOrder(newOrder)
+                    
+                    // 2. Decrement stock for each item in the order
+                    _cartItems.value.forEach { cartItem ->
+                        val newStock = cartItem.product.stock - cartItem.quantity
+                        repository.updateProductStock(cartItem.product.id, newStock)
+                    }
+
                     clearCart()
                     _orderSuccess.value = trackingNumber
                     _isLoading.value = false

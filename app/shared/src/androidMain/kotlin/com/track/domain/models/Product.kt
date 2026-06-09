@@ -10,6 +10,7 @@ data class Product(
     val price: Double = 0.0,
     val imageUrl: String = "",
     val stock: Int = 0,
+    val branch: String = "", // Branch where item is stored
     val category: String = "",
     val isActive: Boolean = true,
     val addedBy: String = "",

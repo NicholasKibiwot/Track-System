@@ -346,7 +346,13 @@ fun ProductCard(
                 }
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(product.name, fontWeight = FontWeight.Bold, maxLines = 1)
-                    Text(product.category, color = Color.Gray, fontSize = 12.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(product.category, color = Color.Gray, fontSize = 12.sp)
+                        if (product.branch.isNotBlank()) {
+                            Text(" • ", color = Color.Gray, fontSize = 12.sp)
+                            Text(product.branch, color = Color(0xFFFF5252), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,

@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.track.presentation.auth.AuthViewModel
+import java.util.Calendar
 import com.track.presentation.auth.StaffLoginScreen
 import com.track.presentation.navigation.Screen
 import com.track.presentation.admin.AdminDashboard
@@ -43,6 +44,18 @@ fun StaffNavHost(
         // Redirect back to debug portal instead of real login
         navController.navigate("temp_login") {
             popUpTo(0) { inclusive = true }
+        }
+    }
+
+    // Auto-logout simulation at Close of Business (e.g., 6 PM)
+    LaunchedEffect(currentUser) {
+        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        if ((hour >= 18 || hour < 8) && currentUser != null) {
+            // It's after hours. In a real app, we might check if they've already been logged out today
+            // or if this is the first time they open the app after 6 PM.
+            // For now, we simulate the 'end of day' reset.
+            // authViewModel.logout() // Uncomment for real enforcement
+            // onLogout()
         }
     }
 

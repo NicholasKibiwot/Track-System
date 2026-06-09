@@ -72,20 +72,22 @@ fun InventoryAddDialog(
     var name by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
+    var branch by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add New Item") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Name") })
-                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price") })
-                OutlinedTextField(value = stock, onValueChange = { stock = it }, label = { Text("Stock") })
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Name") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = price, onValueChange = { price = it }, label = { Text("Price") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = stock, onValueChange = { stock = it }, label = { Text("Stock") }, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(value = branch, onValueChange = { branch = it }, label = { Text("Branch Location") }, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {
             Button(onClick = {
-                onConfirm(Product(id = "", name = name, price = price.toDoubleOrNull() ?: 0.0, stock = stock.toIntOrNull() ?: 0))
+                onConfirm(Product(id = "", name = name, price = price.toDoubleOrNull() ?: 0.0, stock = stock.toIntOrNull() ?: 0, branch = branch))
             }) { Text("Add") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
@@ -114,6 +116,7 @@ fun InventoryItemRow(product: Product) {
             Column(Modifier.weight(1f)) {
                 Text(product.name, fontWeight = FontWeight.Bold)
                 Text("KES ${product.price}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                Text("Branch: ${product.branch.ifBlank { "Main Store" }}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
             }
             
             Column(horizontalAlignment = Alignment.End) {
