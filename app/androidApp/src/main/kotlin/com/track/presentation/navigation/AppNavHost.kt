@@ -230,7 +230,6 @@ private fun NavGraphBuilder.addCustomerRoutes(
 
     composable(Screen.Profile.route) {
         ProfileScreen(
-            onBackClick = { navController.popBackStack() },
             onNavigateToOrders = { navController.navigate(Screen.MyOrders.route) },
             onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
             onLogout = {

@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.track.data.repository.FirestoreRepository
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +23,7 @@ open class AuthViewModel
         private val _currentUser = MutableStateFlow<User?>(null)
         val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
-        private val _isLoading = MutableStateFlow(false)
+        private val _isLoading = MutableStateFlow(value = false)
         val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
         private val _errorMessage = MutableStateFlow<String?>(null)
@@ -36,10 +35,6 @@ open class AuthViewModel
                 auth.addAuthStateListener { firebaseAuth ->
                     val firebaseUser = firebaseAuth.currentUser
                     if (firebaseUser != null) {
-                        // If we already have a user with the same ID, don't necessarily overwrite 
-                        // until loadUserProfile completes, but we need some state here.
-                        // Actually, if we're "logged in" in Firebase but profile isn't loaded yet,
-                        // we might want a temporary placeholder or wait.
                         loadUserProfile(firebaseUser.uid)
                     } else {
                         _currentUser.value = null
@@ -65,39 +60,13 @@ open class AuthViewModel
                     val result = auth.signInWithEmailAndPassword(email, password).await()
                     val uid = result.user?.uid ?: throw Exception("Login failed.")
                     
-                    // Force refresh profile immediately
                     val user = repository.getUser(uid) ?: createDefaultProfile(
                         uid = uid, 
                         email = email,
                         name = email.split("@")[0]
                     )
 
-                    // Robust role check:
-                    // 1. If no expectedRole, anyone can login (e.g. general refresh).
-                    // 2. If expectedRole is CUSTOMER, only CUSTOMERs.
-                    // 3. If expectedRole is STAFF, allow any internal role (STAFF, DRIVER, SUPER_ADMIN).
-                    if (expectedRole != null) {
-                        when (expectedRole) {
-                            UserRole.CUSTOMER -> {
-                                if (user.role != UserRole.CUSTOMER) {
-                                    auth.signOut()
-                                    throw Exception("Please use a customer account to log in here.")
-                                }
-                            }
-                            UserRole.STAFF -> {
-                                if (user.role == UserRole.CUSTOMER) {
-                                    auth.signOut()
-                                    throw Exception("Access denied. This portal is for staff only.")
-                                }
-                            }
-                            else -> {
-                                if (user.role != expectedRole) {
-                                    auth.signOut()
-                                    throw Exception("Insufficient permissions for this role.")
-                                }
-                            }
-                        }
-                    }
+                    validateUserRole(user, expectedRole)
 
                     repository.updateUserOnlineStatus(uid, true)
                     _currentUser.value = user
@@ -107,6 +76,26 @@ open class AuthViewModel
                     _errorMessage.value = e.localizedMessage ?: "Login failed."
                     _isLoading.value = false
                 }
+            }
+        }
+
+        private fun validateUserRole(user: User, expectedRole: UserRole?) {
+            if (expectedRole == null) return
+
+            val isUnauthorized = when (expectedRole) {
+                UserRole.CUSTOMER -> user.role != UserRole.CUSTOMER
+                UserRole.STAFF -> user.role == UserRole.CUSTOMER
+                else -> user.role != expectedRole
+            }
+
+            if (isUnauthorized) {
+                auth.signOut()
+                val message = when (expectedRole) {
+                    UserRole.CUSTOMER -> "Please use a customer account to log in here."
+                    UserRole.STAFF -> "Access denied. This portal is for staff only."
+                    else -> "Insufficient permissions for this role."
+                }
+                throw Exception(message)
             }
         }
 
@@ -137,15 +126,14 @@ open class AuthViewModel
                 try {
                     val result = auth.createUserWithEmailAndPassword(email, password).await()
                     val uid = result.user?.uid ?: throw Exception("Registration failed.")
-                    val newUser =
-                        User(
-                            id = uid,
-                            email = email,
-                            name = name,
-                            phone = phone,
-                            role = UserRole.CUSTOMER,
-                            isOnline = true,
-                        )
+                    val newUser = User(
+                        id = uid,
+                        email = email,
+                        name = name,
+                        phone = phone,
+                        role = UserRole.CUSTOMER,
+                        isOnline = true,
+                    )
                     repository.createUser(newUser)
                     _currentUser.value = newUser
                     _isLoading.value = false
@@ -160,8 +148,7 @@ open class AuthViewModel
         fun logout() {
             viewModelScope.launch {
                 try {
-                    val uid = auth.currentUser?.uid
-                    if (uid != null) {
+                    auth.currentUser?.uid?.let { uid ->
                         repository.updateUserOnlineStatus(uid, false)
                     }
                 } catch (e: Exception) {
@@ -181,41 +168,48 @@ open class AuthViewModel
                 try {
                     val user = repository.getUser(firebaseUser.uid)
                     if (user == null) {
-                        createDefaultProfile(
-                            uid = firebaseUser.uid,
-                            email = firebaseUser.email ?: "",
-                            name = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0) ?: "User"
-                        )
+                        handleMissingProfile(firebaseUser)
                     } else {
-                        // Ensure email and name are updated if missing (e.g. Google login sync)
-                        var updatedUser = user
-                        var needsUpdate = false
-                        
-                        if (user.email.isBlank() && !firebaseUser.email.isNullOrBlank()) {
-                            updatedUser = updatedUser.copy(email = firebaseUser.email!!)
-                            needsUpdate = true
-                        }
-                        
-                        if (user.name == "User" || user.name.isBlank()) {
-                             val newName = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0)
-                             if (!newName.isNullOrBlank()) {
-                                 updatedUser = updatedUser.copy(name = newName)
-                                 needsUpdate = true
-                             }
-                        }
-
-                        if (needsUpdate) {
-                            repository.createUser(updatedUser)
-                            _currentUser.value = updatedUser
-                        } else {
-                            _currentUser.value = user
-                        }
-                        repository.updateUserOnlineStatus(firebaseUser.uid, true)
+                        updateProfileIfNeeded(user, firebaseUser)
                     }
                 } catch (e: Exception) {
                     Log.e("AuthViewModel", "Failed to refresh profile", e)
                 }
             }
+        }
+
+        private suspend fun handleMissingProfile(firebaseUser: com.google.firebase.auth.FirebaseUser) {
+            createDefaultProfile(
+                uid = firebaseUser.uid,
+                email = firebaseUser.email ?: "",
+                name = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0) ?: "User"
+            )
+        }
+
+        private suspend fun updateProfileIfNeeded(user: User, firebaseUser: com.google.firebase.auth.FirebaseUser) {
+            var updatedUser = user
+            var needsUpdate = false
+            
+            if (user.email.isBlank() && !firebaseUser.email.isNullOrBlank()) {
+                updatedUser = updatedUser.copy(email = firebaseUser.email!!)
+                needsUpdate = true
+            }
+            
+            if ((user.name == "User") || user.name.isBlank()) {
+                 val newName = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0)
+                 if (!newName.isNullOrBlank()) {
+                     updatedUser = updatedUser.copy(name = newName)
+                     needsUpdate = true
+                 }
+            }
+
+            if (needsUpdate) {
+                repository.createUser(updatedUser)
+                _currentUser.value = updatedUser
+            } else {
+                _currentUser.value = user
+            }
+            repository.updateUserOnlineStatus(firebaseUser.uid, true)
         }
 
         fun clearError() {
@@ -236,38 +230,37 @@ open class AuthViewModel
             }
         }
 
-    fun updateProfile(
-        name: String,
-        phone: String,
-        shippingAddress: String,
-        dob: String = "",
-        country: String = "",
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit,
-    ) {
-        val uid = auth.currentUser?.uid ?: return onError("Not logged in.")
-        viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            try {
-                repository.updateUserProfile(
-                    userId = uid,
-                    name = name,
-                    phone = phone,
-                    shippingAddress = shippingAddress,
-                    dob = dob,
-                    country = country
-                )
-                // Refresh the local state
-                val updated = repository.getUser(uid)
-                if (updated != null) _currentUser.value = updated
-                _isLoading.value = false
-                onSuccess()
-            } catch (e: Exception) {
-                _errorMessage.value = e.localizedMessage ?: "Update failed."
-                _isLoading.value = false
-                onError(_errorMessage.value ?: "Update failed.")
+        fun updateProfile(
+            name: String,
+            phone: String,
+            shippingAddress: String,
+            dob: String = "",
+            country: String = "",
+            onSuccess: () -> Unit,
+            onError: (String) -> Unit,
+        ) {
+            val uid = auth.currentUser?.uid ?: return onError("Not logged in.")
+            viewModelScope.launch {
+                _isLoading.value = true
+                _errorMessage.value = null
+                try {
+                    repository.updateUserProfile(
+                        userId = uid,
+                        name = name,
+                        phone = phone,
+                        shippingAddress = shippingAddress,
+                        dob = dob,
+                        country = country
+                    )
+                    val updated = repository.getUser(uid)
+                    if (updated != null) _currentUser.value = updated
+                    _isLoading.value = false
+                    onSuccess()
+                } catch (e: Exception) {
+                    _errorMessage.value = e.localizedMessage ?: "Update failed."
+                    _isLoading.value = false
+                    onError(_errorMessage.value ?: "Update failed.")
+                }
             }
         }
-    }
     }

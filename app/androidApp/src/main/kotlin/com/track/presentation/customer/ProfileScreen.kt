@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,11 +26,10 @@ import com.track.presentation.viewmodel.AppAuthViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    onBackClick: () -> Unit,
     onNavigateToOrders: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onLogout: () -> Unit,
-    authViewModel: AppAuthViewModel
+    authViewModel: AppAuthViewModel,
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
     val scrollState = rememberScrollState()
@@ -41,10 +41,10 @@ fun ProfileScreen(
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     label = { Text("Home") },
                     selected = false,
-                    onClick = { /* Navigate to Home via parent */ }
+                    onClick = { }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Timeline, contentDescription = null) },
+                    icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                     label = { Text("Tracking") },
                     selected = false,
                     onClick = { }
@@ -146,7 +146,7 @@ fun ProfileScreen(
 
             SettingsListItem(icon = Icons.Default.Notifications, title = "Notifications")
             SettingsListItem(icon = Icons.Default.Lock, title = "Security")
-            SettingsListItem(icon = Icons.Default.Help, title = "Support Center")
+            SettingsListItem(icon = Icons.AutoMirrored.Filled.Help, title = "Support Center")
             
             Spacer(modifier = Modifier.height(24.dp))
             

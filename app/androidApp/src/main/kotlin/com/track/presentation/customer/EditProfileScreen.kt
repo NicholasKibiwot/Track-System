@@ -1,6 +1,5 @@
 package com.track.presentation.customer
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -50,7 +49,7 @@ fun EditProfileScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
             )
         },
         containerColor = Color.White,
@@ -148,9 +147,8 @@ fun EditProfileScreen(
                         shippingAddress = shippingAddress,
                         dob = dob,
                         country = country,
-                        onSuccess = onSaveSuccess,
-                        onError = { localError = it }
-                    )
+                        onSuccess = onSaveSuccess
+                    ) { localError = it }
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),
