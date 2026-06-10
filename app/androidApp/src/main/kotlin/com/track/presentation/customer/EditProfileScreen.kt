@@ -14,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,95 +60,80 @@ fun EditProfileScreen(
                 .padding(padding)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Completion Progress
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F9FA))
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    LinearProgressIndicator(
-                        progress = { 0.8f },
-                        modifier = Modifier.fillMaxWidth().height(4.dp).clip(CircleShape),
-                        color = Color(0xFF4C84FF),
-                        trackColor = Color(0xFFE9ECEF)
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("You only need 20% more!", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text(
-                        "Complete your data, and get our voucher of free shipping fee!",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
             // Profile Image Section
             Box(contentAlignment = Alignment.BottomEnd) {
                 Surface(
                     modifier = Modifier.size(100.dp).clip(CircleShape),
-                    color = Color.LightGray
+                    color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Icon(
                         Icons.Default.Person,
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize().padding(20.dp),
-                        tint = Color.White
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
-                Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .padding(4.dp)
-                        .shadow(1.dp, CircleShape),
-                    contentAlignment = Alignment.Center
+                Surface(
+                    modifier = Modifier.size(32.dp),
+                    shape = CircleShape,
+                    color = Color(0xFF4C84FF),
+                    shadowElevation = 2.dp
                 ) {
-                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color(0xFF4C84FF))
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(16.dp), tint = Color.White)
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Form Fields
-            ProfileEditField(label = "Name", value = name, onValueChange = { name = it })
+            // Form Section
+            Text(
+                "Personal Information",
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfileEditField(label = "Full Name", value = name, onValueChange = { name = it }, icon = Icons.Default.Person)
             
             ProfileEditField(
                 label = "Email Address",
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = { },
                 isReadOnly = true,
+                icon = Icons.Default.Email,
                 trailingContent = {
-                    Surface(
-                        color = Color(0xFFEBF2FF),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Row(modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = Color(0xFF4C84FF), modifier = Modifier.size(10.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("VERIFIED", color = Color(0xFF4C84FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
+                    Text("VERIFIED", color = Color(0xFF4C84FF), fontSize = 10.sp, fontWeight = FontWeight.Bold)
                 }
             )
 
-            ProfileEditField(label = "Phone Number", value = phone, onValueChange = { phone = it })
-            ProfileEditField(label = "Date of Birth", value = dob, onValueChange = { dob = it }, placeholder = "dd/mm/yyyy")
-            ProfileEditField(label = "Country", value = country, onValueChange = { country = it }, placeholder = "Jakarta, Indonesia")
+            ProfileEditField(label = "Phone Number", value = phone, onValueChange = { phone = it }, icon = Icons.Default.Phone)
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                "Shipping & Location",
+                modifier = Modifier.fillMaxWidth(),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ProfileEditField(label = "Shipping Address", value = shippingAddress, onValueChange = { shippingAddress = it }, icon = Icons.Default.LocationOn)
+            ProfileEditField(label = "Country", value = country, onValueChange = { country = it }, icon = Icons.Default.Public)
+            ProfileEditField(label = "Date of Birth", value = dob, onValueChange = { dob = it }, placeholder = "dd/mm/yyyy", icon = Icons.Default.Cake)
 
             // Error Message
             val displayError = localError ?: errorMessage
             displayError?.let {
-                Text(it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(vertical = 8.dp))
+                Text(it, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(vertical = 12.dp))
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = {
@@ -169,18 +153,18 @@ fun EditProfileScreen(
                     )
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(28.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4C84FF)),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1C1E)),
                 enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Saved Change", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                    Text("Save Changes", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
             }
             
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
@@ -190,30 +174,30 @@ fun ProfileEditField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     placeholder: String = "",
     isReadOnly: Boolean = false,
     trailingContent: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            if (trailingContent != null) {
-                Spacer(modifier = Modifier.width(8.dp))
-                trailingContent()
-            }
-        }
+        Text(label, fontWeight = FontWeight.Medium, fontSize = 14.sp, color = Color.Gray)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder, color = Color.LightGray) },
+            leadingIcon = { Icon(icon, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp)) },
+            trailingIcon = trailingContent,
             shape = RoundedCornerShape(12.dp),
             readOnly = isReadOnly,
+            singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF4C84FF),
                 unfocusedBorderColor = Color(0xFFE9ECEF),
-                disabledBorderColor = Color(0xFFE9ECEF)
+                disabledBorderColor = Color(0xFFE9ECEF),
+                focusedContainerColor = if (isReadOnly) Color(0xFFF8F9FA) else Color.White,
+                unfocusedContainerColor = if (isReadOnly) Color(0xFFF8F9FA) else Color.White
             )
         )
     }

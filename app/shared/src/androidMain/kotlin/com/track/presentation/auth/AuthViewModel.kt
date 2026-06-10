@@ -66,7 +66,11 @@ open class AuthViewModel
                     val uid = result.user?.uid ?: throw Exception("Login failed.")
                     
                     // Force refresh profile immediately
-                    val user = repository.getUser(uid) ?: createDefaultProfile(uid, email)
+                    val user = repository.getUser(uid) ?: createDefaultProfile(
+                        uid = uid, 
+                        email = email,
+                        name = email.split("@")[0]
+                    )
 
                     // Robust role check:
                     // 1. If no expectedRole, anyone can login (e.g. general refresh).
@@ -106,9 +110,17 @@ open class AuthViewModel
             }
         }
 
-        private suspend fun createDefaultProfile(uid: String, email: String): User {
-            val newUser = User(id = uid, email = email, name = email.split("@")[0], role = UserRole.CUSTOMER)
+        private suspend fun createDefaultProfile(uid: String, email: String, name: String): User {
+            val newUser = User(
+                id = uid, 
+                email = email, 
+                name = name, 
+                role = UserRole.CUSTOMER,
+                isActive = true,
+                isOnline = true
+            )
             repository.createUser(newUser)
+            _currentUser.value = newUser
             return newUser
         }
 
@@ -169,10 +181,36 @@ open class AuthViewModel
                 try {
                     val user = repository.getUser(firebaseUser.uid)
                     if (user == null) {
-                        createDefaultProfile(firebaseUser.uid, firebaseUser.email ?: "User")
+                        createDefaultProfile(
+                            uid = firebaseUser.uid,
+                            email = firebaseUser.email ?: "",
+                            name = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0) ?: "User"
+                        )
                     } else {
+                        // Ensure email and name are updated if missing (e.g. Google login sync)
+                        var updatedUser = user
+                        var needsUpdate = false
+                        
+                        if (user.email.isBlank() && !firebaseUser.email.isNullOrBlank()) {
+                            updatedUser = updatedUser.copy(email = firebaseUser.email!!)
+                            needsUpdate = true
+                        }
+                        
+                        if (user.name == "User" || user.name.isBlank()) {
+                             val newName = firebaseUser.displayName ?: firebaseUser.email?.split("@")?.get(0)
+                             if (!newName.isNullOrBlank()) {
+                                 updatedUser = updatedUser.copy(name = newName)
+                                 needsUpdate = true
+                             }
+                        }
+
+                        if (needsUpdate) {
+                            repository.createUser(updatedUser)
+                            _currentUser.value = updatedUser
+                        } else {
+                            _currentUser.value = user
+                        }
                         repository.updateUserOnlineStatus(firebaseUser.uid, true)
-                        _currentUser.value = user
                     }
                 } catch (e: Exception) {
                     Log.e("AuthViewModel", "Failed to refresh profile", e)
