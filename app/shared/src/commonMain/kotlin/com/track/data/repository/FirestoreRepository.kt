@@ -1,0 +1,35 @@
+package com.track.data.repository
+
+import com.track.domain.models.GeoLocation
+import com.track.domain.models.Order
+import com.track.domain.models.OrderStatus
+import com.track.domain.models.Product
+import com.track.domain.models.StaffProfile
+import com.track.domain.models.TrackingLocation
+import com.track.domain.models.TrackingRecord
+import com.track.domain.models.User
+import kotlinx.coroutines.flow.Flow
+
+interface FirestoreRepository {
+    fun getOrdersFlow(): Flow<List<Order>>
+    fun getOrdersByCustomerFlow(customerId: String): Flow<List<Order>>
+    fun getOrdersByDriverFlow(driverId: String): Flow<List<Order>>
+    suspend fun updateOrderStatus(orderId: String, status: OrderStatus)
+    suspend fun updateOrderLocation(orderId: String, newLocation: GeoLocation)
+    fun getTrackingRecordFlow(orderId: String): Flow<TrackingRecord?>
+    suspend fun updateTrackingLocation(orderId: String, newLocation: TrackingLocation, driverId: String)
+    fun getUsersFlow(): Flow<List<User>>
+    fun getStaffUsersFlow(): Flow<List<User>>
+    fun getStaffProfilesFlow(): Flow<List<StaffProfile>>
+    fun getProductsFlow(): Flow<List<Product>>
+    suspend fun createOrder(order: Order): String
+    suspend fun createProduct(product: Product): String
+    suspend fun createUser(user: User): String
+    suspend fun updateUserActiveStatus(userId: String, isActive: Boolean)
+    suspend fun updateUserOnlineStatus(userId: String, isOnline: Boolean)
+    suspend fun updateStaffActiveStatus(staffId: String, isActive: Boolean)
+    suspend fun updateProductStock(productId: String, newStock: Int)
+    suspend fun getOrderById(orderId: String): Order?
+    suspend fun getUser(userId: String): User?
+    suspend fun updateUserProfile(userId: String, name: String, phone: String, shippingAddress: String, dob: String = "", country: String = "")
+}
