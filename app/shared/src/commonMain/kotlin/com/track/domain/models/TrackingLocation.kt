@@ -4,7 +4,9 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TrackingLocation(
-    val latitude: Double = 0.0,
-    val longitude: Double = 0.0,
+    val address: String = "",
+    val lat: Double = 0.0,
+    val lng: Double = 0.0,
     val timestamp: Long = 0L
 )
+

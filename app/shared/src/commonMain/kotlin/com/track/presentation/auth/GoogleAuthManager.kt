@@ -12,3 +12,4 @@ interface GoogleAuthManager {
     fun signIn()
     fun signOut()
 }
+

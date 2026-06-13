@@ -5,7 +5,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class StaffProfile(
     val id: String = "",
-    val name: String = "",
-    val role: String = "",
+    val userId: String = "",
+    val employeeId: String = "",
+    val department: String = "",
+    val office: String = "",
+    val hiredBy: String = "",
     val isActive: Boolean = true
 )
+

@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.track.data.remote.ApiClient
+import com.track.util.logError
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +57,7 @@ fun CustomerProfileCompletionScreen(
                             onCompleted()
                         } catch (e: Exception) {
                             // Non-fatal for now as requested
-                            android.util.Log.e("ProfileCompletion", "Failed to update profile on server", e)
+                            logError("ProfileCompletion", "Failed to update profile on server", e)
                             onCompleted()
                         } finally {
                             isLoading = false
@@ -75,3 +76,4 @@ fun CustomerProfileCompletionScreen(
         }
     }
 }
+

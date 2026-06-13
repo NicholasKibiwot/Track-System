@@ -24,13 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.domain.models.Product
-import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.customer.CustomerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailsScreen(
     productId: String,
-    viewModel: AppCustomerViewModel,
+    viewModel: CustomerViewModel,
     onBackClick: () -> Unit,
     onAddToCart: (Product) -> Unit,
 ) {
@@ -237,7 +237,7 @@ private fun ColorSelector(colors: List<String>, selectedColor: String, onColorSe
     LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         items(colors) { colorStr ->
             val color = try {
-                Color(android.graphics.Color.parseColor(colorStr))
+                parseColor(colorStr)
             } catch (e: Exception) {
                 Color.Gray
             }
@@ -281,4 +281,16 @@ private fun ReviewsSection() {
         style = MaterialTheme.typography.bodyMedium,
         color = Color.Gray,
     )
+}
+
+private fun parseColor(colorString: String): Color {
+    if (colorString.startsWith("#")) {
+        val color = colorString.substring(1).toLong(16)
+        if (colorString.length == 7) {
+            return Color(color or 0x00000000FF000000L)
+        } else if (colorString.length == 9) {
+            return Color(color)
+        }
+    }
+    return Color.Gray
 }

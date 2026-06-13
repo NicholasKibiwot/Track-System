@@ -5,15 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
 import com.track.domain.models.Order
 import com.track.domain.models.User
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
-import javax.inject.Inject
+import com.track.util.CommonInject
 
-@HiltViewModel // 👈 CRITICAL: Tells Hilt to manage this ViewModel
+@CommonHiltViewModel // 👈 CRITICAL: Tells Hilt to manage this ViewModel
 class AdminViewModel
-    @Inject
+    @CommonInject
     constructor( // 👈 CRITICAL: Enables dependency injection
         private val repository: FirestoreRepository,
     ) : ViewModel() {
@@ -27,3 +27,4 @@ class AdminViewModel
         private val _isLoading = kotlinx.coroutines.flow.MutableStateFlow(false)
         val isLoading: StateFlow<Boolean> = _isLoading
     }
+

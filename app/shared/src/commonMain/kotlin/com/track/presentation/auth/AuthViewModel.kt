@@ -2,6 +2,7 @@ package com.track.presentation.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.track.data.repository.AuthRepository
 import com.track.data.repository.FirestoreRepository
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
@@ -11,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 open class AuthViewModel(
+    private val authRepository: AuthRepository,
     private val repository: FirestoreRepository,
 ) : ViewModel() {
     private val _currentUser = MutableStateFlow<User?>(null)
@@ -28,9 +30,25 @@ open class AuthViewModel(
         expectedRole: UserRole? = null,
         onSuccess: (User) -> Unit,
     ) {
-        // Implementation will be handled by subclasses or expected/actual if needed
-        // For now, let's keep it simple and assume the repository handles the auth check if possible
-        // but Firebase Auth is platform specific.
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+                val result = authRepository.signIn(email, password)
+                if (result.isSuccess) {
+                    val user = authRepository.getCurrentUserData() ?: throw Exception("User data not found")
+                    validateUserRole(user, expectedRole)
+                    _currentUser.value = user
+                    onSuccess(user)
+                } else {
+                    _errorMessage.value = result.exceptionOrNull()?.message ?: "Login failed."
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Login failed."
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
     protected fun validateUserRole(user: User, expectedRole: UserRole?) {
@@ -69,6 +87,47 @@ open class AuthViewModel(
         _errorMessage.value = null
     }
 
+    fun isAuthenticated(): Boolean = authRepository.isAuthenticated()
+
+    fun register(
+        email: String,
+        password: String,
+        name: String,
+        phone: String,
+        onSuccess: () -> Unit
+    ) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            try {
+                val result = authRepository.register(email, password, name, phone)
+                if (result.isSuccess) {
+                    _currentUser.value = result.getOrNull()
+                    onSuccess()
+                } else {
+                    _errorMessage.value = result.exceptionOrNull()?.message ?: "Registration failed."
+                }
+            } catch (e: Exception) {
+                _errorMessage.value = e.message ?: "Registration failed."
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun refreshProfile(idToken: String) {
+        viewModelScope.launch {
+            try {
+                val user = authRepository.getCurrentUserData()
+                if (user != null) {
+                    _currentUser.value = user
+                }
+            } catch (e: Exception) {
+                // Ignore background refresh errors
+            }
+        }
+    }
+
     fun updateProfile(
         name: String,
         phone: String,
@@ -103,3 +162,4 @@ open class AuthViewModel(
         }
     }
 }
+

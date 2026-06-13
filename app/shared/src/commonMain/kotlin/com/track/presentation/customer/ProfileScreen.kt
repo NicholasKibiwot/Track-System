@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.presentation.viewmodel.AppAuthViewModel
+import com.track.presentation.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,7 +29,7 @@ fun ProfileScreen(
     onNavigateToOrders: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onLogout: () -> Unit,
-    authViewModel: AppAuthViewModel,
+    authViewModel: AuthViewModel,
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
     val scrollState = rememberScrollState()
@@ -189,3 +189,4 @@ fun SettingsListItem(
         }
     }
 }
+

@@ -6,7 +6,11 @@ import kotlinx.serialization.Serializable
 enum class OrderStatus {
     PENDING,
     ACCEPTED,
-    IN_TRANSIT,
+    PROCESSING,
+    SHIPPED,
+    INTRANSIT,
     DELIVERED,
-    CANCELLED
+    CANCELLED,
+    DELAYED
 }
+

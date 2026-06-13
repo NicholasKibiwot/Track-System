@@ -10,3 +10,4 @@ enum class UserRole {
     ADMIN,
     SUPER_ADMIN
 }
+

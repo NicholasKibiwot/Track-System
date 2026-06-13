@@ -2,7 +2,6 @@ package com.track.data.remote
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.engine.okhttp.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
@@ -10,24 +9,15 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
-/**
- * ApiClient configured for a physical phone connecting to a local PC server.
- * If the server is unreachable, calls will fail quickly due to short timeouts,
- * and the UI layer is configured to handle these failures gracefully.
- */
 class ApiClient(
-    // Base URL is read from environment variables or system properties for compliance.
-    // In production, this should be injected via a build-time configuration.
-    private val baseUrl: String = System.getenv("API_BASE_URL") 
-        ?: System.getProperty("api.base_url") 
-        ?: DEFAULT_BASE_URL,
+    private val baseUrl: String = DEFAULT_BASE_URL,
 ) {
     companion object {
         private const val DEFAULT_BASE_URL = "http://192.168.1.3:8080"
     }
 
     private val client =
-        HttpClient(OkHttp) {
+        HttpClient {
             install(ContentNegotiation) {
                 json(
                     Json {
@@ -37,7 +27,7 @@ class ApiClient(
                 )
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = 3000 // Fast fail (3s) if server is unreachable
+                requestTimeoutMillis = 3000
                 connectTimeoutMillis = 3000
                 socketTimeoutMillis = 3000
             }

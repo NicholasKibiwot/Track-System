@@ -5,6 +5,7 @@ import com.track.domain.models.GeoLocation
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 import com.track.domain.models.TrackingLocation
+import com.track.util.getCurrentTimeMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -12,16 +13,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import javax.inject.Singleton
+import com.track.util.CommonInject
+import com.track.util.CommonSingleton
 
-@Singleton
+@CommonSingleton
 class TrackingStateHolder
-    @Inject
+    @CommonInject
     constructor(
         private val repository: FirestoreRepository,
     ) {
-        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
         private val _orders = MutableStateFlow<List<Order>>(emptyList())
         val orders: StateFlow<List<Order>> = _orders.asStateFlow()
@@ -74,7 +75,7 @@ class TrackingStateHolder
 
             val newGeoLocation =
                 GeoLocation(
-                    id = "LOC-${System.currentTimeMillis()}",
+                    id = "LOC-${getCurrentTimeMillis()}",
                     latitude = nextLat,
                     longitude = nextLon,
                     accuracyMeters = kotlin.random.Random.nextDouble(5.0, 20.0),
@@ -93,3 +94,4 @@ class TrackingStateHolder
             updateTrackingRecord(orderId, driverId, newTrackingLocation)
         }
     }
+

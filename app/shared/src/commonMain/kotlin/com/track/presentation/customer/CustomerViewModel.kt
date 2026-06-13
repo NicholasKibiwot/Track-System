@@ -2,23 +2,23 @@ package com.track.presentation.customer
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Timestamp
 import com.track.data.repository.FirestoreRepository
 import com.track.domain.models.Order
 import com.track.domain.models.OrderItem
 import com.track.domain.models.OrderStatus
 import com.track.domain.models.Product
 import com.track.domain.models.TrackingRecord
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
+import com.track.util.TrackTimestamp
+import com.track.util.randomUUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
-import java.util.UUID
+import com.track.util.CommonInject
 
 open class CustomerViewModel
-    @Inject
+    @CommonInject
     constructor(
         private val repository: FirestoreRepository,
     ) : ViewModel() {
@@ -101,7 +101,7 @@ open class CustomerViewModel
                         _isLoading.value = false
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load products: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load products: ${e.message}"
                     _isLoading.value = false
                 }
             }
@@ -115,7 +115,7 @@ open class CustomerViewModel
                         _myOrders.value = orders.sortedByDescending { it.createdAt.seconds }
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load your orders: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load your orders: ${e.message}"
                 }
             }
         }
@@ -127,7 +127,7 @@ open class CustomerViewModel
                         _trackingRecord.value = record
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load tracking info: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load tracking info: ${e.message}"
                 }
             }
         }
@@ -235,7 +235,7 @@ open class CustomerViewModel
                     val orderItems =
                         _cartItems.value.map { cartItem ->
                             OrderItem(
-                                id = UUID.randomUUID().toString(),
+                                id = randomUUID(),
                                 productId = cartItem.product.id,
                                 productName = cartItem.product.name,
                                 quantity = cartItem.quantity,
@@ -266,8 +266,8 @@ open class CustomerViewModel
                             destination = destination,
                             currentLocation = null,
                             locationHistory = emptyList(),
-                            createdAt = Timestamp.now(),
-                            updatedAt = Timestamp.now(),
+                            createdAt = TrackTimestamp.now(),
+                            updatedAt = TrackTimestamp.now(),
                         )
 
                     // 1. Create the order
@@ -284,7 +284,7 @@ open class CustomerViewModel
                     _isLoading.value = false
                     onSuccess(orderId)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to place order: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to place order: ${e.message}"
                     _isLoading.value = false
                 }
             }
@@ -314,3 +314,4 @@ data class CartItem(
     val product: Product,
     val quantity: Int,
 )
+

@@ -22,7 +22,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.UserRole
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,7 +30,7 @@ import com.track.domain.models.UserRole
 fun StaffLoginScreen(
     onLoginSuccess: (role: String) -> Unit = {},
     onBackClick: () -> Unit = {},
-    viewModel: AuthViewModel = hiltViewModel(),
+    viewModel: AuthViewModel = kmpViewModel(),
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -200,4 +200,5 @@ fun StaffLoginScreenPreview() {
         StaffLoginScreen()
     }
 }
+
 

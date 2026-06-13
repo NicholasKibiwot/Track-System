@@ -26,14 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.data.FakeData
 import com.track.domain.models.Product
 import com.track.presentation.customer.CustomerViewModel
 
 @Composable
 fun CustomerDashboard(
-    viewModel: CustomerViewModel = hiltViewModel(),
+    viewModel: CustomerViewModel = kmpViewModel(),
     onProductClick: (Product) -> Unit = {},
 ) {
     val products by viewModel.products.collectAsState()
@@ -158,3 +158,4 @@ fun CustomerDashboardPreview() {
         }
     }
 }
+

@@ -18,14 +18,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
-import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.customer.CustomerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyOrdersScreen(
     onBackClick: () -> Unit,
     onOrderClick: (String) -> Unit,
-    viewModel: AppCustomerViewModel
+    viewModel: CustomerViewModel
 ) {
     val orders by viewModel.myOrders.collectAsState()
     var selectedTab by remember { mutableStateOf("Delivered") }
@@ -177,3 +177,4 @@ fun CustomerOrderCard(order: Order, onClick: () -> Unit) {
         }
     }
 }
+

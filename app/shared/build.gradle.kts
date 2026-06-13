@@ -71,12 +71,24 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.jetbrains.lifecycle.viewmodel.compose)
             implementation(libs.jetbrains.lifecycle.runtime.compose)
+            implementation(libs.androidx.navigation.compose)
+            implementation(libs.kotlinx.datetime)
+            implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")
+            implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")
+            implementation(compose.materialIconsExtended)
+            implementation("javax.inject:javax.inject:1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
+            implementation("io.ktor:ktor-client-js:${libs.versions.ktor.get()}")
+        }
+        @OptIn(ExperimentalWasmDsl::class)
+        wasmJsMain.dependencies {
+            implementation("io.ktor:ktor-client-js:${libs.versions.ktor.get()}")
         }
     }
 }

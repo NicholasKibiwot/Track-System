@@ -19,12 +19,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.customer.CustomerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CartScreen(
-    viewModel: AppCustomerViewModel,
+    viewModel: CustomerViewModel,
     onNavigateToCheckout: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -196,3 +196,4 @@ fun CartItemRow(
         }
     }
 }
+

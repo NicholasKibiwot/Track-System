@@ -13,13 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.presentation.viewmodel.AppAuthViewModel
+import com.track.presentation.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(
     onBackClick: () -> Unit,
-    viewModel: AppAuthViewModel
+    viewModel: AuthViewModel
 ) {
     var email by remember { mutableStateOf("") }
     var isSubmitted by remember { mutableStateOf(false) }
@@ -106,3 +106,4 @@ fun ForgotPasswordScreen(
         }
     }
 }
+

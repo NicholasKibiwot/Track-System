@@ -15,12 +15,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.Product
 
 @Composable
 fun InventoryManagementScreen(
-    viewModel: SuperAdminViewModel = hiltViewModel()
+    viewModel: SuperAdminViewModel = kmpViewModel()
 ) {
     val products by viewModel.products.collectAsState()
     var showAddDialog by remember { mutableStateOf(false) }
@@ -130,3 +130,4 @@ fun InventoryItemRow(product: Product) {
         }
     }
 }
+

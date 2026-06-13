@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -24,17 +24,17 @@ import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.*
 import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
-import com.track.presentation.viewmodel.AppAuthViewModel
-import com.track.presentation.viewmodel.AppCustomerViewModel
-import com.track.presentation.viewmodel.AppSuperAdminViewModel
+import com.track.presentation.auth.AuthViewModel
+import com.track.presentation.customer.CustomerViewModel
+import com.track.presentation.admin.SuperAdminViewModel
 import com.track.presentation.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavHost(
-    authViewModel: AppAuthViewModel = hiltViewModel(),
-    customerViewModel: AppCustomerViewModel = hiltViewModel(),
-    adminViewModel: AppSuperAdminViewModel = hiltViewModel(),
+    authViewModel: AuthViewModel = kmpViewModel(),
+    customerViewModel: CustomerViewModel = kmpViewModel(),
+    adminViewModel: SuperAdminViewModel = kmpViewModel(),
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -78,7 +78,7 @@ fun AppNavHost(
 
 private fun NavGraphBuilder.addAdminRoutes(
     navController: NavHostController,
-    adminViewModel: AppSuperAdminViewModel,
+    adminViewModel: SuperAdminViewModel,
 ) {
     composable(Screen.AdminAddProduct.route) {
         AdminAddProductScreen(
@@ -92,8 +92,8 @@ private fun NavGraphBuilder.addAdminRoutes(
 private fun NavGraphBuilder.addPublicRoutes(
     navController: NavHostController,
     currentUser: User?,
-    customerViewModel: AppCustomerViewModel,
-    authViewModel: AppAuthViewModel,
+    customerViewModel: CustomerViewModel,
+    authViewModel: AuthViewModel,
 ) {
     composable(Screen.Welcome.route) {
         WelcomeScreen(
@@ -134,12 +134,11 @@ private fun NavGraphBuilder.addPublicRoutes(
 
 private fun NavGraphBuilder.addAuthRoutes(
     navController: NavHostController,
-    authViewModel: AppAuthViewModel,
+    authViewModel: AuthViewModel,
     showMessage: (String) -> Unit,
 ) {
     composable(Screen.Login.route) {
         CustomerLoginContainer(
-            webClientId = "582302215652-c2fovnjevegiplri3gdcst4d0gcm8eqa.apps.googleusercontent.com",
             onProfileCompleted = {
                 showMessage("Successfully logged in!")
                 navController.navigate(Screen.Profile.route) {
@@ -190,8 +189,8 @@ private fun NavGraphBuilder.addAuthRoutes(
 private fun NavGraphBuilder.addCustomerRoutes(
     navController: NavHostController,
     currentUser: User?,
-    customerViewModel: AppCustomerViewModel,
-    authViewModel: AppAuthViewModel,
+    customerViewModel: CustomerViewModel,
+    authViewModel: AuthViewModel,
     showMessage: (String) -> Unit,
 ) {
     composable(Screen.Cart.route) {
@@ -286,3 +285,4 @@ private fun NavGraphBuilder.addCustomerRoutes(
         }
     }
 }
+

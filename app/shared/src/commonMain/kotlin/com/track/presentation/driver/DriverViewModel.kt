@@ -2,23 +2,25 @@ package com.track.presentation.driver
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.firebase.Timestamp
 import com.track.data.repository.FirestoreRepository
 import com.track.data.TrackingStateHolder
 import com.track.domain.models.GeoLocation
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 import com.track.domain.models.TrackingLocation
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
+import com.track.util.TrackTimestamp
+import com.track.util.getCurrentTimeMillis
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import com.track.util.CommonInject
+import kotlin.time.Clock
 
-@HiltViewModel
+@CommonHiltViewModel
 open class DriverViewModel
-    @Inject
+    @CommonInject
     constructor(
         private val repository: FirestoreRepository,
         private val trackingStateHolder: TrackingStateHolder,
@@ -67,7 +69,7 @@ open class DriverViewModel
                         _isLoading.value = false
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load orders: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load orders: ${e.message}"
                     _isLoading.value = false
                 }
             }
@@ -84,7 +86,7 @@ open class DriverViewModel
                 try {
                     repository.updateOrderStatus(orderId, newStatus)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update status: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update status: ${e.message}"
                 }
             }
         }
@@ -109,11 +111,11 @@ open class DriverViewModel
                     // Update orders collection
                     val newGeoLocation =
                         GeoLocation(
-                            id = "LOC-${System.currentTimeMillis()}",
+                            id = "LOC-${getCurrentTimeMillis()}",
                             latitude = newLat,
                             longitude = newLng,
                             accuracyMeters = kotlin.random.Random.nextDouble(5.0, 20.0),
-                            timestamp = Timestamp.now(),
+                            timestamp = TrackTimestamp.now(),
                             address = "En route to ${order.destination}",
                         )
                     repository.updateOrderLocation(orderId, newGeoLocation)
@@ -131,7 +133,7 @@ open class DriverViewModel
                         driverId = _currentDriverId.value,
                     )
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update location: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update location: ${e.message}"
                 }
             }
         }
@@ -149,11 +151,11 @@ open class DriverViewModel
                 try {
                     val newGeoLocation =
                         GeoLocation(
-                            id = "LOC-${System.currentTimeMillis()}",
+                            id = "LOC-${getCurrentTimeMillis()}",
                             latitude = lat,
                             longitude = lng,
                             accuracyMeters = 10.0,
-                            timestamp = Timestamp.now(),
+                            timestamp = TrackTimestamp.now(),
                             address = address,
                         )
                     repository.updateOrderLocation(orderId, newGeoLocation)
@@ -170,7 +172,7 @@ open class DriverViewModel
                         driverId = _currentDriverId.value,
                     )
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update location: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update location: ${e.message}"
                 }
             }
         }
@@ -179,3 +181,4 @@ open class DriverViewModel
             _errorMessage.value = null
         }
     }
+

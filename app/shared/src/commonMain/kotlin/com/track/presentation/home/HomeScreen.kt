@@ -37,9 +37,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.Product
-import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.customer.CustomerViewModel
 
 private const val SEE_ALL = "See All"
 
@@ -49,7 +49,7 @@ fun HomeScreen(
     onNavigateToCart: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
-    viewModel: AppCustomerViewModel = hiltViewModel(),
+    viewModel: CustomerViewModel = kmpViewModel(),
 ) {
     val products by viewModel.products.collectAsState()
     
@@ -384,3 +384,4 @@ data class CategoryItem(
     val icon: ImageVector,
     val backgroundColor: Color
 )
+

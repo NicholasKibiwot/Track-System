@@ -14,13 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.OrderStatus
 import com.track.ui.components.MockTrackMap
 
 @Composable
 fun UserDashboard(
-    viewModel: UserViewModel = hiltViewModel()
+    viewModel: UserViewModel = kmpViewModel()
 ) {
     val currentJob by viewModel.currentJob.collectAsState(null)
     val isLoading by viewModel.isLoading.collectAsState()
@@ -135,3 +135,4 @@ fun StatusBadge(status: OrderStatus) {
         )
     }
 }
+

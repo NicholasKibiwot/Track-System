@@ -30,7 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.data.FakeData
 import com.track.domain.models.Order
 import com.track.domain.models.OrderItem
@@ -38,7 +38,7 @@ import com.track.domain.models.OrderItem
 @Composable
 fun OrderLookupScreen(
     trackingId: String? = null,
-    viewModel: StaffViewModel = hiltViewModel()
+    viewModel: StaffViewModel = kmpViewModel()
 ) {
     val lookupResult by viewModel.lookupResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -301,3 +301,4 @@ fun OrderLookupScreenPreview() {
         OrderLookupScreen()
     }
 }
+

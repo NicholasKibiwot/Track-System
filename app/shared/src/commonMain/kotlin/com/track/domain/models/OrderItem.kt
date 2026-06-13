@@ -1,14 +1,16 @@
 package com.track.domain.models
 
-import com.google.firebase.firestore.DocumentId
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class OrderItem(
-    @DocumentId val id: String = "",
+    val id: String = "",
     val productId: String = "",
     val productName: String = "",
     val quantity: Int = 1,
     val unitPrice: Double = 0.0,
-    val imageUrl: String? = null,
-    val branch: String = "", // Branch from which item was procured
-    val machineType: MachineType? = null, // For printing machine logistics
+    val branch: String = "",
+    val machineType: MachineType? = null,
+    val imageUrl: String? = null
 )
+

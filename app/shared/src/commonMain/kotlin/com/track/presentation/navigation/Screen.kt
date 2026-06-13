@@ -4,6 +4,8 @@ sealed class Screen(
     val route: String,
 ) {
     // Public (no login required)
+    object Welcome : Screen("welcome")
+
     object Home : Screen("home")
 
     object Login : Screen("login")
@@ -18,6 +20,10 @@ sealed class Screen(
     object Checkout : Screen("checkout")
 
     object MyOrders : Screen("my_orders")
+
+    object Profile : Screen("profile")
+
+    object EditProfile : Screen("edit_profile")
 
     data class Tracking(
         val orderId: String,
@@ -48,3 +54,4 @@ sealed class Screen(
 
     object DriverScan : Screen("driver_scan")
 }
+

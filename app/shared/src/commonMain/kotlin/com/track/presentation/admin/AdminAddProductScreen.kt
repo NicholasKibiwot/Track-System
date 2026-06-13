@@ -34,14 +34,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.Product
-import com.track.presentation.viewmodel.AppSuperAdminViewModel
+import com.track.presentation.admin.SuperAdminViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminAddProductScreen(
-    viewModel: AppSuperAdminViewModel = hiltViewModel(),
+    viewModel: SuperAdminViewModel = kmpViewModel(),
     onBackClick: () -> Unit = {},
     onProductAdded: () -> Unit = {},
 ) {
@@ -180,3 +180,4 @@ fun AdminAddProductScreenPreview() {
         AdminAddProductScreen()
     }
 }
+

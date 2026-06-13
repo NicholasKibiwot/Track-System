@@ -8,14 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.customer.CustomerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CheckoutScreen(
     onOrderSuccess: (orderId: String) -> Unit,
     onBackClick: () -> Unit,
-    viewModel: AppCustomerViewModel
+    viewModel: CustomerViewModel
 ) {
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -82,3 +82,4 @@ fun CheckoutScreen(
         }
     }
 }
+

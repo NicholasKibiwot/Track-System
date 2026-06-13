@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 import com.track.data.repository.FirestoreRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,11 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import com.track.util.CommonInject
 
-@HiltViewModel
+@CommonHiltViewModel
 class UserViewModel
-    @Inject
+    @CommonInject
     constructor(
         private val repository: FirestoreRepository,
     ) : ViewModel() {
@@ -64,3 +64,4 @@ class UserViewModel
             }
         }
     }
+

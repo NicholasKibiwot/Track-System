@@ -13,14 +13,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.track.presentation.viewmodel.AppAuthViewModel
+import com.track.presentation.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onRegisterSuccess: () -> Unit,
     onBackClick: () -> Unit,
-    viewModel: AppAuthViewModel,
+    viewModel: AuthViewModel,
 ) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -148,3 +148,4 @@ fun RegisterScreen(
         }
     }
 }
+

@@ -8,16 +8,16 @@ import com.track.domain.models.OrderStatus
 import com.track.domain.models.Product
 import com.track.domain.models.StaffProfile
 import com.track.domain.models.User
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import com.track.util.CommonInject
 
-@HiltViewModel
+@CommonHiltViewModel
 open class SuperAdminViewModel
-    @Inject
+    @CommonInject
     constructor(
         private val repository: FirestoreRepository,
     ) : ViewModel() {
@@ -90,7 +90,7 @@ open class SuperAdminViewModel
                         _isLoading.value = false
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load orders: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load orders: ${e.message}"
                     _isLoading.value = false
                 }
             }
@@ -103,7 +103,7 @@ open class SuperAdminViewModel
                         _staffUsers.value = users
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load staff: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load staff: ${e.message}"
                 }
             }
         }
@@ -115,7 +115,7 @@ open class SuperAdminViewModel
                         _staffProfiles.value = profiles
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load staff profiles: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load staff profiles: ${e.message}"
                 }
             }
         }
@@ -127,7 +127,7 @@ open class SuperAdminViewModel
                         _products.value = products
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load products: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load products: ${e.message}"
                 }
             }
         }
@@ -139,7 +139,7 @@ open class SuperAdminViewModel
                         _allUsers.value = users
                     }
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to load users: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to load users: ${e.message}"
                 }
             }
         }
@@ -154,7 +154,7 @@ open class SuperAdminViewModel
                 try {
                     repository.updateOrderStatus(orderId, newStatus)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update order: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update order: ${e.message}"
                 }
             }
         }
@@ -168,7 +168,7 @@ open class SuperAdminViewModel
                     val id = repository.createOrder(order)
                     onSuccess(id)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to create order: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to create order: ${e.message}"
                 }
             }
         }
@@ -183,7 +183,7 @@ open class SuperAdminViewModel
                 try {
                     repository.updateUserActiveStatus(userId, isActive)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update staff: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update staff: ${e.message}"
                 }
             }
         }
@@ -196,7 +196,7 @@ open class SuperAdminViewModel
                 try {
                     repository.updateStaffActiveStatus(staffDocId, isActive)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to update staff profile: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to update staff profile: ${e.message}"
                 }
             }
         }
@@ -210,7 +210,7 @@ open class SuperAdminViewModel
                     val id = repository.createUser(user)
                     onSuccess(id)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to create user: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to create user: ${e.message}"
                 }
             }
         }
@@ -226,7 +226,7 @@ open class SuperAdminViewModel
                     val id = repository.createProduct(product)
                     onSuccess(id)
                 } catch (e: Exception) {
-                    _errorMessage.value = "Failed to create product: ${e.localizedMessage}"
+                    _errorMessage.value = "Failed to create product: ${e.message}"
                 }
             }
         }
@@ -241,3 +241,4 @@ open class SuperAdminViewModel
 
         fun getUserById(userId: String): User? = _allUsers.value.find { it.id == userId }
     }
+

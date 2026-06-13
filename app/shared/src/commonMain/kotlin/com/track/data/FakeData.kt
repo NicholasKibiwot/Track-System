@@ -142,8 +142,8 @@ object FakeData {
                     address = "Nairobi, Kenya",
                 ),
             locationHistory = emptyList(),
-            createdAtMillis = 1686300000000L,
-            updatedAtMillis = 1686300000000L,
+            createdAt = com.track.util.TrackTimestamp(1686300000L, 0),
+            updatedAt = com.track.util.TrackTimestamp(1686300000L, 0),
         )
 
     val previewOrders =
@@ -183,8 +183,8 @@ object FakeData {
                         address = "Nakuru Town",
                     ),
                 locationHistory = emptyList(),
-                createdAtMillis = 1686300000000L,
-                updatedAtMillis = 1686300000000L,
+                createdAt = com.track.util.TrackTimestamp(1686300000L, 0),
+                updatedAt = com.track.util.TrackTimestamp(1686300000L, 0),
             ),
         )
 
@@ -203,3 +203,4 @@ object FakeData {
 
     fun getOrderById(id: String): Order? = previewOrders.find { it.id == id }
 }
+

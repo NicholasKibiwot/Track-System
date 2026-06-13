@@ -13,12 +13,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 
 @Composable
-fun OrderManagementScreen(viewModel: SuperAdminViewModel = hiltViewModel()) {
+fun OrderManagementScreen(viewModel: SuperAdminViewModel = kmpViewModel()) {
     val orders by viewModel.orders.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -209,3 +209,4 @@ private fun getStatusColor(status: OrderStatus): Color {
 fun OrderManagementScreenPreview() {
     OrderManagementScreen()
 }
+

@@ -4,16 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.AuthRepository
 import com.track.domain.models.UserRole
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+import com.track.util.CommonInject
 
-@HiltViewModel
+@CommonHiltViewModel
 class LoginViewModel
-    @Inject
+    @CommonInject
     constructor(
         private val authRepository: AuthRepository,
     ) : ViewModel() {
@@ -73,3 +73,4 @@ class LoginViewModel
             _errorMessage.value = null
         }
     }
+

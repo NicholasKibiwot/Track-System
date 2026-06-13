@@ -5,6 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TrackingRecord(
     val orderId: String = "",
-    val locations: List<TrackingLocation> = emptyList(),
-    val lastUpdated: Long = 0L
+    val currentLocation: TrackingLocation? = null,
+    val driverId: String = "",
+    val locationHistory: List<TrackingLocation> = emptyList()
 )
+

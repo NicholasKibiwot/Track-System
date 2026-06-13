@@ -1,6 +1,6 @@
 package com.track.presentation.viewmodel
 
-import com.google.firebase.auth.FirebaseAuth
+import com.track.data.repository.AuthRepository
 import com.track.data.repository.FirestoreRepository
 import com.track.presentation.auth.AuthViewModel
 import com.track.presentation.customer.CustomerViewModel
@@ -10,9 +10,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppAuthViewModel @Inject constructor(
-    auth: FirebaseAuth,
+    authRepository: AuthRepository,
     repository: FirestoreRepository
-) : AuthViewModel(auth, repository)
+) : AuthViewModel(authRepository, repository)
 
 @HiltViewModel
 class AppCustomerViewModel @Inject constructor(

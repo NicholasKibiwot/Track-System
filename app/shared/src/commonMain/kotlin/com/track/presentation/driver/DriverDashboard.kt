@@ -20,7 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.track.util.kmpViewModel
 import com.track.data.FakeData
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
@@ -28,7 +28,7 @@ import com.track.domain.models.OrderStatus
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DriverDashboard(
-    viewModel: DriverViewModel = hiltViewModel(),
+    viewModel: DriverViewModel = kmpViewModel(),
     onScanPackage: () -> Unit = {},
     onLogout: () -> Unit = {},
 ) {
@@ -293,4 +293,5 @@ fun DriverOrderCard(
         }
     }
 }
+
 
