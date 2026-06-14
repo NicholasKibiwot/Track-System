@@ -1,7 +1,7 @@
 package com.track.staff.presentation.viewmodel
 
-import com.google.firebase.auth.FirebaseAuth
 import com.track.data.TrackingStateHolder
+import com.track.data.repository.AuthRepository
 import com.track.data.repository.FirestoreRepository
 import com.track.presentation.admin.SuperAdminViewModel
 import com.track.presentation.auth.AuthViewModel
@@ -12,9 +12,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class StaffAuthViewModel @Inject constructor(
-    auth: FirebaseAuth,
+    authRepository: AuthRepository,
     repository: FirestoreRepository
-) : AuthViewModel(auth, repository)
+) : AuthViewModel(authRepository, repository)
 
 @HiltViewModel
 class AppStaffViewModel @Inject constructor(
