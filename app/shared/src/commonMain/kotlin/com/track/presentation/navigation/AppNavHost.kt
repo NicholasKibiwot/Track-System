@@ -68,7 +68,7 @@ fun AppNavHost(
             startDestination = Screen.Home.route,
             modifier = Modifier.padding(padding)
         ) {
-            addPublicRoutes(navController, currentUser, customerViewModel, authViewModel)
+            addPublicRoutes(navController, customerViewModel, authViewModel)
             addAuthRoutes(navController, authViewModel, ::showMessage)
             addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel, ::showMessage)
             addAdminRoutes(navController, adminViewModel)
@@ -91,7 +91,6 @@ private fun NavGraphBuilder.addAdminRoutes(
 
 private fun NavGraphBuilder.addPublicRoutes(
     navController: NavHostController,
-    currentUser: User?,
     customerViewModel: CustomerViewModel,
     authViewModel: AuthViewModel,
 ) {
