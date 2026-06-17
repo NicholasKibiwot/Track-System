@@ -55,28 +55,11 @@ fun MyOrdersScreen(
                 .fillMaxSize()
                 .background(Color(0xFFF8F9FA))
         ) {
-            // Tabs
-            ScrollableTabRow(
-                selectedTabIndex = tabs.indexOf(selectedTab),
-                containerColor = Color.White,
-                contentColor = Color(0xFF4C84FF),
-                edgePadding = 16.dp,
-                divider = {}
-            ) {
-                tabs.forEach { tab ->
-                    Tab(
-                        selected = selectedTab == tab,
-                        onClick = { selectedTab = tab },
-                        text = {
-                            Text(
-                                text = tab,
-                                color = if (selectedTab == tab) Color(0xFF4C84FF) else Color.Gray,
-                                fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal
-                            )
-                        }
-                    )
-                }
-            }
+            OrderTabRow(
+                tabs = tabs,
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
 
             val filteredOrders = remember(orders, selectedTab) {
                 orders.filter { order ->
@@ -89,20 +72,60 @@ fun MyOrdersScreen(
                 }
             }
 
-            if (filteredOrders.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No orders found", color = Color.Gray)
+            OrderList(
+                orders = filteredOrders,
+                onOrderClick = onOrderClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun OrderTabRow(
+    tabs: List<String>,
+    selectedTab: String,
+    onTabSelected: (String) -> Unit
+) {
+    ScrollableTabRow(
+        selectedTabIndex = tabs.indexOf(selectedTab),
+        containerColor = Color.White,
+        contentColor = Color(0xFF4C84FF),
+        edgePadding = 16.dp,
+        divider = {}
+    ) {
+        tabs.forEach { tab ->
+            Tab(
+                selected = selectedTab == tab,
+                onClick = { onTabSelected(tab) },
+                text = {
+                    Text(
+                        text = tab,
+                        color = if (selectedTab == tab) Color(0xFF4C84FF) else Color.Gray,
+                        fontWeight = if (selectedTab == tab) FontWeight.Bold else FontWeight.Normal
+                    )
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(filteredOrders) { order ->
-                        CustomerOrderCard(order = order, onClick = { onOrderClick(order.id) })
-                    }
-                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun OrderList(
+    orders: List<Order>,
+    onOrderClick: (String) -> Unit
+) {
+    if (orders.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("No orders found", color = Color.Gray)
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(orders) { order ->
+                CustomerOrderCard(order = order, onClick = { onOrderClick(order.id) })
             }
         }
     }

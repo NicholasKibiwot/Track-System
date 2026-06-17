@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.track.util.CommonInject
 
+@CommonHiltViewModel
 open class CustomerViewModel
     @CommonInject
     constructor(

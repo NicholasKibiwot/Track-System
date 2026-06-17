@@ -11,7 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-open class AuthViewModel(
+import com.track.util.CommonHiltViewModel
+import com.track.util.CommonInject
+
+@CommonHiltViewModel
+open class AuthViewModel
+@CommonInject
+constructor(
     private val authRepository: AuthRepository,
     private val repository: FirestoreRepository,
 ) : ViewModel() {
