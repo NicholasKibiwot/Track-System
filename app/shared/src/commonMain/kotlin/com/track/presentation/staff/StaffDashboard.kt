@@ -58,11 +58,13 @@ fun StaffDashboard(
             } else {
                 MainStaffSection(
                     orders = orders,
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { searchQuery = it },
-                    onSearchClick = { viewModel.lookupOrder(searchQuery) },
-                    isLoading = isLoading,
-                    errorMessage = errorMessage,
+                    searchState = SearchState(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        onSearch = { viewModel.lookupOrder(searchQuery) },
+                        isLoading = isLoading,
+                        errorMessage = errorMessage
+                    ),
                     lookupResult = lookupResult,
                     onUpdateOrderStatus = { orderId, newStatus ->
                         viewModel.updateOrderStatus(orderId, newStatus)
@@ -135,11 +137,7 @@ private fun InventorySection(products: List<Product>) {
 @Composable
 private fun MainStaffSection(
     orders: List<Order>,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onSearchClick: () -> Unit,
-    isLoading: Boolean,
-    errorMessage: String?,
+    searchState: SearchState,
     lookupResult: Order?,
     onUpdateOrderStatus: (String, OrderStatus) -> Unit
 ) {
@@ -187,8 +185,8 @@ private fun MainStaffSection(
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
+                    value = searchState.query,
+                    onValueChange = searchState.onQueryChange,
                     modifier = Modifier.weight(1f),
                     placeholder = { Text("Enter Tracking ID") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
@@ -197,12 +195,12 @@ private fun MainStaffSection(
                 )
                 Spacer(Modifier.width(8.dp))
                 Button(
-                    onClick = onSearchClick,
+                    onClick = searchState.onSearch,
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.height(56.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A1C1E))
                 ) {
-                    if (isLoading) {
+                    if (searchState.isLoading) {
                         CircularProgressIndicator(
                             color = Color.White,
                             modifier = Modifier.size(24.dp)
@@ -217,7 +215,7 @@ private fun MainStaffSection(
 
     Spacer(Modifier.height(24.dp))
 
-    errorMessage?.let {
+    searchState.errorMessage?.let {
         Text(it, color = Color.Red, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(16.dp))
     }
@@ -234,7 +232,7 @@ private fun MainStaffSection(
             order = lookupResult,
             onUpdateStatus = { newStatus -> onUpdateOrderStatus(lookupResult.id, newStatus) }
         )
-    } else if (!isLoading) {
+    } else if (!searchState.isLoading) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -279,6 +277,14 @@ private fun MainStaffSection(
         }
     }
 }
+
+data class SearchState(
+    val query: String,
+    val onQueryChange: (String) -> Unit,
+    val onSearch: () -> Unit,
+    val isLoading: Boolean,
+    val errorMessage: String?
+)
 
 @Composable
 fun InventoryItemCard(product: Product) {

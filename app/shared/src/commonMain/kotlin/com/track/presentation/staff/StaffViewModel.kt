@@ -11,7 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-open class StaffViewModel(
+import com.track.util.CommonHiltViewModel
+import com.track.util.CommonInject
+
+@CommonHiltViewModel
+open class StaffViewModel
+@CommonInject
+constructor(
     private val repository: FirestoreRepository,
 ) : ViewModel() {
     private val _lookupResult = MutableStateFlow<Order?>(null)
