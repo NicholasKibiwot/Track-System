@@ -13,6 +13,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.track.presentation.auth.AuthViewModel
+import com.track.presentation.admin.SuperAdminViewModel
+import com.track.presentation.driver.DriverViewModel
+import com.track.presentation.staff.StaffViewModel
 import java.util.Calendar
 import com.track.presentation.auth.StaffLoginScreen
 import com.track.presentation.navigation.Screen
@@ -25,17 +28,13 @@ import com.track.presentation.driver.ScanPackageScreen
 import com.track.presentation.staff.OrderLookupScreen
 import com.track.presentation.staff.StaffDashboard
 import com.track.staff.presentation.auth.TemporaryLoginScreen
-import com.track.staff.presentation.viewmodel.AppDriverViewModel
-import com.track.staff.presentation.viewmodel.AppStaffViewModel
-import com.track.staff.presentation.viewmodel.AppSuperAdminViewModel
-import com.track.staff.presentation.viewmodel.StaffAuthViewModel
 
 @Composable
 fun StaffNavHost(
-    authViewModel: StaffAuthViewModel = hiltViewModel(),
-    adminViewModel: AppSuperAdminViewModel = hiltViewModel(),
-    staffViewModel: AppStaffViewModel = hiltViewModel(),
-    driverViewModel: AppDriverViewModel = hiltViewModel()
+    authViewModel: AuthViewModel = hiltViewModel(),
+    adminViewModel: SuperAdminViewModel = hiltViewModel(),
+    staffViewModel: StaffViewModel = hiltViewModel(),
+    driverViewModel: DriverViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -99,7 +98,7 @@ private fun getStartDestination(role: String?): String {
 }
 
 private fun NavGraphBuilder.addAdminRoutes(
-    viewModel: AppSuperAdminViewModel,
+    viewModel: SuperAdminViewModel,
     onLogout: () -> Unit
 ) {
     composable(Screen.AdminDashboard.route) { 
@@ -117,7 +116,7 @@ private fun NavGraphBuilder.addAdminRoutes(
 }
 
 private fun NavGraphBuilder.addStaffRoutes(
-    viewModel: AppStaffViewModel,
+    viewModel: StaffViewModel,
     onLogout: () -> Unit
 ) {
     composable(Screen.StaffDashboard.route) { 
@@ -130,7 +129,7 @@ private fun NavGraphBuilder.addStaffRoutes(
 
 private fun NavGraphBuilder.addDriverRoutes(
     navController: NavHostController,
-    viewModel: AppDriverViewModel,
+    viewModel: DriverViewModel,
     onLogout: () -> Unit
 ) {
     composable(Screen.DriverDashboard.route) {

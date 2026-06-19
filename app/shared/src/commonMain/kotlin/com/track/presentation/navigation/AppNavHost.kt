@@ -65,7 +65,7 @@ fun AppNavHost(
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Welcome.route,
             modifier = Modifier.padding(padding)
         ) {
             addPublicRoutes(navController, customerViewModel, authViewModel)
