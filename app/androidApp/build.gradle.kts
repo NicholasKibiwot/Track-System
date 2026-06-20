@@ -36,7 +36,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime)
     implementation(projects.app.shared)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.jetbrains.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material.icons.extended)

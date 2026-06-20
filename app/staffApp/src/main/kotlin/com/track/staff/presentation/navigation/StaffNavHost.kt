@@ -28,13 +28,17 @@ import com.track.presentation.driver.ScanPackageScreen
 import com.track.presentation.staff.OrderLookupScreen
 import com.track.presentation.staff.StaffDashboard
 import com.track.staff.presentation.auth.TemporaryLoginScreen
+import com.track.staff.presentation.viewmodel.AppAuthViewModel
+import com.track.staff.presentation.viewmodel.AppDriverViewModel
+import com.track.staff.presentation.viewmodel.AppStaffViewModel
+import com.track.staff.presentation.viewmodel.AppSuperAdminViewModel
 
 @Composable
 fun StaffNavHost(
-    authViewModel: AuthViewModel = hiltViewModel(),
-    adminViewModel: SuperAdminViewModel = hiltViewModel(),
-    staffViewModel: StaffViewModel = hiltViewModel(),
-    driverViewModel: DriverViewModel = hiltViewModel()
+    authViewModel: AppAuthViewModel = hiltViewModel(),
+    adminViewModel: AppSuperAdminViewModel = hiltViewModel(),
+    staffViewModel: AppStaffViewModel = hiltViewModel(),
+    driverViewModel: AppDriverViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()
@@ -50,10 +54,7 @@ fun StaffNavHost(
     LaunchedEffect(currentUser) {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         if ((hour >= 18 || hour < 8) && currentUser != null) {
-            // It's after hours. In a real app, we might check if they've already been logged out today
-            // or if this is the first time they open the app after 6 PM.
-            // For now, we simulate the 'end of day' reset.
-            // authViewModel.logout() // Uncomment for real enforcement
+            // authViewModel.logout()
             // onLogout()
         }
     }

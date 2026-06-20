@@ -32,9 +32,9 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavHost(
-    authViewModel: AuthViewModel = kmpViewModel(),
-    customerViewModel: CustomerViewModel = kmpViewModel(),
-    adminViewModel: SuperAdminViewModel = kmpViewModel(),
+    authViewModel: AuthViewModel,
+    customerViewModel: CustomerViewModel,
+    adminViewModel: SuperAdminViewModel,
 ) {
     val navController = rememberNavController()
     val currentUser by authViewModel.currentUser.collectAsState()

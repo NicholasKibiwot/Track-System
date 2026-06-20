@@ -1,6 +1,7 @@
 package com.track.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -8,7 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.track.presentation.navigation.AppNavHost
+import com.track.presentation.viewmodel.AppAuthViewModel
+import com.track.presentation.viewmodel.AppCustomerViewModel
+import com.track.presentation.viewmodel.AppSuperAdminViewModel
 import com.track.ui.theme.AppTheme
 import com.track.util.FirebaseInitializer
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,8 +29,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // One-time setup for internal accounts (Admin, Staff, Driver)
-        firebaseInitializer.initializeInternalUsers()
+        try {
+            firebaseInitializer.initializeInternalUsers()
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Error in FirebaseInitializer", e)
+        }
 
         setContent {
             AppTheme {
@@ -33,11 +41,13 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
                 ) {
-                    // Bring back the navigation system!
-                    AppNavHost()
+                    AppNavHost(
+                        authViewModel = hiltViewModel<AppAuthViewModel>(),
+                        customerViewModel = hiltViewModel<AppCustomerViewModel>(),
+                        adminViewModel = hiltViewModel<AppSuperAdminViewModel>()
+                    )
                 }
             }
         }
     }
-
 }

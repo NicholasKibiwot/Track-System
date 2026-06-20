@@ -21,11 +21,16 @@ import track.app.shared.generated.resources.compose_multiplatform
 
 import com.track.presentation.navigation.AppNavHost
 import com.track.ui.theme.AppTheme
+import com.track.util.kmpViewModel
 
 @Composable
 @Preview
 fun App() {
     AppTheme {
-        AppNavHost()
+        AppNavHost(
+            authViewModel = kmpViewModel(),
+            customerViewModel = kmpViewModel(),
+            adminViewModel = kmpViewModel()
+        )
     }
 }
