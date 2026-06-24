@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.track.getPlatform
 import com.track.util.kmpViewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -18,6 +19,9 @@ import androidx.navigation.navArgument
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
 import com.track.presentation.admin.AdminAddProductScreen
+import com.track.presentation.admin.AdminDashboard
+import com.track.presentation.admin.WebAdminDashboard
+import com.track.presentation.admin.SuperAdminViewModel
 import com.track.presentation.auth.ForgotPasswordScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
@@ -26,7 +30,12 @@ import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
 import com.track.presentation.auth.AuthViewModel
 import com.track.presentation.customer.CustomerViewModel
-import com.track.presentation.admin.SuperAdminViewModel
+import com.track.presentation.driver.DriverDashboard
+import com.track.presentation.driver.DriverViewModel
+import com.track.presentation.driver.ScanPackageScreen
+import com.track.presentation.staff.OrderLookupScreen
+import com.track.presentation.staff.StaffDashboard
+import com.track.presentation.staff.StaffViewModel
 import com.track.presentation.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
@@ -40,6 +49,7 @@ fun AppNavHost(
     val currentUser by authViewModel.currentUser.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val isWeb = remember { getPlatform().isWeb }
 
     fun showMessage(message: String) {
         scope.launch {
@@ -58,6 +68,28 @@ fun AppNavHost(
         if (currentUser == null && !authViewModel.isAuthenticated()) {
             // Fully logged out
         }
+
+        // Auto-redirect for Admin/Staff/Driver on Web
+        if (isWeb && currentUser != null) {
+            when (currentUser?.role) {
+                UserRole.SUPER_ADMIN, UserRole.ADMIN -> {
+                    navController.navigate(Screen.AdminDashboard.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                }
+                UserRole.STAFF -> {
+                    navController.navigate(Screen.StaffDashboard.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                }
+                UserRole.DRIVER -> {
+                    navController.navigate(Screen.DriverDashboard.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                }
+                else -> {}
+            }
+        }
     }
 
     Scaffold(
@@ -65,14 +97,70 @@ fun AppNavHost(
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Welcome.route,
+            startDestination = if (isWeb && currentUser != null) {
+                when(currentUser?.role) {
+                    UserRole.SUPER_ADMIN, UserRole.ADMIN -> Screen.AdminDashboard.route
+                    UserRole.STAFF -> Screen.StaffDashboard.route
+                    else -> Screen.Welcome.route
+                }
+            } else Screen.Welcome.route,
             modifier = Modifier.padding(padding)
         ) {
             addPublicRoutes(navController, customerViewModel, authViewModel)
             addAuthRoutes(navController, authViewModel, ::showMessage)
             addCustomerRoutes(navController, currentUser, customerViewModel, authViewModel, ::showMessage)
             addAdminRoutes(navController, adminViewModel)
+            addStaffRoutes(navController)
+            addDriverRoutes(navController)
         }
+    }
+}
+
+private fun NavGraphBuilder.addDriverRoutes(
+    navController: NavHostController,
+) {
+    composable(Screen.DriverDashboard.route) {
+        val driverViewModel = kmpViewModel<DriverViewModel>()
+        DriverDashboard(
+            viewModel = driverViewModel,
+            onScanPackage = { navController.navigate(Screen.DriverScan.route) },
+            onLogout = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.DriverDashboard.route) { inclusive = true }
+                }
+            }
+        )
+    }
+
+    composable(Screen.DriverScan.route) {
+        ScanPackageScreen(
+            onScanSuccess = { _ -> navController.popBackStack() },
+            onBackClick = { navController.popBackStack() }
+        )
+    }
+}
+
+private fun NavGraphBuilder.addStaffRoutes(
+    navController: NavHostController,
+) {
+    composable(Screen.StaffDashboard.route) {
+        val staffViewModel = kmpViewModel<StaffViewModel>()
+        StaffDashboard(
+            viewModel = staffViewModel,
+            onLogout = {
+                navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.StaffDashboard.route) { inclusive = true }
+                }
+            }
+        )
+    }
+
+    composable(Screen.StaffOrderLookup.route) {
+        val staffViewModel = kmpViewModel<StaffViewModel>()
+        OrderLookupScreen(
+            viewModel = staffViewModel,
+            trackingId = null
+        )
     }
 }
 
@@ -80,6 +168,28 @@ private fun NavGraphBuilder.addAdminRoutes(
     navController: NavHostController,
     adminViewModel: SuperAdminViewModel,
 ) {
+    composable(Screen.AdminDashboard.route) {
+        if (getPlatform().isWeb) {
+            WebAdminDashboard(
+                viewModel = adminViewModel,
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.AdminDashboard.route) { inclusive = true }
+                    }
+                }
+            )
+        } else {
+            AdminDashboard(
+                viewModel = adminViewModel,
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.AdminDashboard.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+    }
+
     composable(Screen.AdminAddProduct.route) {
         AdminAddProductScreen(
             viewModel = adminViewModel,
@@ -284,4 +394,3 @@ private fun NavGraphBuilder.addCustomerRoutes(
         }
     }
 }
-
