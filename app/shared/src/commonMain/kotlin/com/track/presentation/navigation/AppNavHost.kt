@@ -26,17 +26,17 @@ import com.track.presentation.auth.ForgotPasswordScreen
 import com.track.presentation.auth.LoginScreen
 import com.track.presentation.auth.RegisterScreen
 import com.track.presentation.customer.*
-import com.track.presentation.customer.ProductDetailsScreen
 import com.track.presentation.home.HomeScreen
+import com.track.presentation.home.ModernHomeScreen
 import com.track.presentation.auth.AuthViewModel
 import com.track.presentation.customer.CustomerViewModel
+import com.track.presentation.staff.StaffDashboard
+import com.track.presentation.staff.StaffViewModel
+import com.track.presentation.welcome.WelcomeScreen
 import com.track.presentation.driver.DriverDashboard
 import com.track.presentation.driver.DriverViewModel
 import com.track.presentation.driver.ScanPackageScreen
 import com.track.presentation.staff.OrderLookupScreen
-import com.track.presentation.staff.StaffDashboard
-import com.track.presentation.staff.StaffViewModel
-import com.track.presentation.welcome.WelcomeScreen
 import kotlinx.coroutines.launch
 
 @Composable
@@ -212,7 +212,7 @@ private fun NavGraphBuilder.addPublicRoutes(
     }
 
     composable(Screen.Home.route) {
-        HomeScreen(
+        ModernHomeScreen(
             onNavigateToCart = { navController.navigate(Screen.Cart.route) },
             onNavigateToProfile = {
                 if (authViewModel.isAuthenticated()) {
@@ -303,7 +303,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     showMessage: (String) -> Unit,
 ) {
     composable(Screen.Cart.route) {
-        CartScreen(
+        ModernCartScreen(
             viewModel = customerViewModel,
             onNavigateToCheckout = {
                 if (currentUser == null) {
@@ -317,7 +317,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     }
 
     composable(Screen.Checkout.route) {
-        CheckoutScreen(
+        ModernCheckoutScreen(
             viewModel = customerViewModel,
             onOrderSuccess = { orderId ->
                 navController.navigate("tracking/$orderId") {
