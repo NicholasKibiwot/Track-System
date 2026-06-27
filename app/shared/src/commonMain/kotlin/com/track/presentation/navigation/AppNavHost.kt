@@ -338,6 +338,11 @@ private fun NavGraphBuilder.addCustomerRoutes(
 
     composable(Screen.Profile.route) {
         ProfileScreen(
+            onNavigateToHome = {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Home.route) { inclusive = true }
+                }
+            },
             onNavigateToOrders = { navController.navigate(Screen.MyOrders.route) },
             onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
             onLogout = {

@@ -26,6 +26,7 @@ import com.track.presentation.auth.AuthViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
+    onNavigateToHome: () -> Unit,
     onNavigateToOrders: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     onLogout: () -> Unit,
@@ -41,19 +42,19 @@ fun ProfileScreen(
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     label = { Text("Home") },
                     selected = false,
-                    onClick = { }
+                    onClick = onNavigateToHome
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                     label = { Text("Tracking") },
                     selected = false,
-                    onClick = { }
+                    onClick = onNavigateToOrders
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.History, contentDescription = null) },
                     label = { Text("History") },
                     selected = false,
-                    onClick = { }
+                    onClick = onNavigateToOrders
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = null) },

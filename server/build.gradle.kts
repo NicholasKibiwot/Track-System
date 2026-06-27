@@ -18,16 +18,16 @@ dependencies {
     implementation(libs.logback)
 
     // Ktor server
-    implementation(libs.ktor.serverCore)
-    implementation(libs.ktor.serverNetty)
-    implementation(libs.ktor.serverContentNegotiation)
-    implementation(libs.ktor.serializationKotlinxJson)
-    implementation(libs.ktor.serverAuth)
-    implementation(libs.ktor.serverAuthJwt)
-    implementation(libs.ktor.serverWebsockets)
-    implementation(libs.ktor.serverCors)
-    implementation(libs.ktor.serverStatusPages)
-    implementation(libs.ktor.serverCallLogging)
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.websockets)
+    implementation(libs.ktor.server.cors)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.call.logging)
 
     // Firebase Admin SDK  (server-side only — uses Java/JVM)
     implementation("com.google.firebase:firebase-admin:9.3.0")
@@ -36,6 +36,6 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
-    testImplementation(libs.ktor.serverTestHost)
+    testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.testJunit)
 }
