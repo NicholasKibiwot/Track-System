@@ -31,7 +31,7 @@ kotlin {
         browser()
     }
     
-    androidLibrary {
+    android {
        namespace = "com.track.app.shared"
        compileSdk = libs.versions.android.compileSdk.get().toInt()
        minSdk = libs.versions.android.minSdk.get().toInt()
@@ -57,9 +57,9 @@ kotlin {
             implementation(libs.credentials.auth)
             implementation(libs.credentials.play.auth)
             implementation(libs.google.googleid)
-            implementation("io.ktor:ktor-client-okhttp:${libs.versions.ktor.get()}")
-            implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
         commonMain.dependencies {
             api(projects.core)
@@ -73,9 +73,9 @@ kotlin {
             implementation(libs.jetbrains.lifecycle.runtime.compose)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.kotlinx.datetime)
-            implementation("io.ktor:ktor-client-core:${libs.versions.ktor.get()}")
-            implementation("io.ktor:ktor-client-content-negotiation:${libs.versions.ktor.get()}")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:${libs.versions.ktor.get()}")
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
             implementation(compose.materialIconsExtended)
             implementation("javax.inject:javax.inject:1")
         }
@@ -84,11 +84,11 @@ kotlin {
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
-            implementation("io.ktor:ktor-client-js:${libs.versions.ktor.get()}")
+            implementation(libs.ktor.client.js)
         }
         @OptIn(ExperimentalWasmDsl::class)
         wasmJsMain.dependencies {
-            implementation("io.ktor:ktor-client-js:${libs.versions.ktor.get()}")
+            implementation(libs.ktor.client.js)
         }
     }
 }
