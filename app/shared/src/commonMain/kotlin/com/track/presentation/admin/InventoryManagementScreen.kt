@@ -24,15 +24,15 @@ import com.track.models.ProductCategory
 
 @Composable
 fun InventoryManagementScreen(
-    viewModel: SuperAdminViewModel = kmpViewModel()
+    viewModel: SuperAdminViewModel = kmpViewModel(),
+    onAddProductClick: () -> Unit = {}
 ) {
     val products by viewModel.products.collectAsState()
-    var showAddDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddDialog = true },
+                onClick = onAddProductClick,
                 containerColor = Color.Black,
                 contentColor = Color.White
             ) {
@@ -67,16 +67,6 @@ fun InventoryManagementScreen(
                 InventoryItemRow(product = product)
             }
         }
-    }
-
-    if (showAddDialog) {
-        InventoryAddDialog(
-            onDismiss = { showAddDialog = false },
-            onConfirm = { newProduct ->
-                viewModel.createProduct(newProduct)
-                showAddDialog = false
-            }
-        )
     }
 }
 

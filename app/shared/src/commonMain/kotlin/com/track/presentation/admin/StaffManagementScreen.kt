@@ -24,15 +24,15 @@ import com.track.models.UserRole
 
 @Composable
 fun StaffManagementScreen(
-    viewModel: SuperAdminViewModel = kmpViewModel()
+    viewModel: SuperAdminViewModel = kmpViewModel(),
+    onAddUserClick: () -> Unit = {}
 ) {
     val staffUsers by viewModel.staffUsers.collectAsState()
-    var showAddStaffDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddStaffDialog = true },
+                onClick = onAddUserClick,
                 containerColor = Color(0xFF1A1C1E),
                 contentColor = Color.White
             ) {
@@ -57,16 +57,6 @@ fun StaffManagementScreen(
                 )
             }
         }
-    }
-
-    if (showAddStaffDialog) {
-        AddStaffDialog(
-            onDismiss = { showAddStaffDialog = false },
-            onConfirm = { newUser ->
-                viewModel.createUser(newUser)
-                showAddStaffDialog = false
-            }
-        )
     }
 }
 

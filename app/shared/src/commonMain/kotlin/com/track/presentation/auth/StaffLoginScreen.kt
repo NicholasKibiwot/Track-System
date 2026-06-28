@@ -6,7 +6,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -25,11 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.track.util.kmpViewModel
 import com.track.models.UserRole
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StaffLoginScreen(
     onLoginSuccess: (role: String) -> Unit = {},
-    onBackClick: () -> Unit = {},
     viewModel: AuthViewModel = kmpViewModel(),
 ) {
     var email by remember { mutableStateOf("") }
@@ -42,17 +39,9 @@ fun StaffLoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A1C1E)) // Dark professional background
+            .background(Color(0xFF1A1C1E)) 
     ) {
-        // Decorative elements
-        Box(
-            modifier = Modifier
-                .size(300.dp)
-                .align(Alignment.TopEnd)
-                .offset(x = 100.dp, y = (-100).dp)
-                .clip(CircleShape)
-                .background(Color(0xFF4C84FF).copy(alpha = 0.1f))
-        )
+        StaffLoginDecorations()
 
         Column(
             modifier = Modifier
@@ -62,39 +51,10 @@ fun StaffLoginScreen(
         ) {
             Spacer(modifier = Modifier.height(60.dp))
             
-            // App Logo/Icon
-            Surface(
-                modifier = Modifier.size(80.dp),
-                shape = RoundedCornerShape(20.dp),
-                color = Color.White.copy(alpha = 0.1f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Badge,
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp),
-                        tint = Color.White
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            Text(
-                text = "Track Staff Portal",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color.White
-            )
-            Text(
-                text = "Secure internal management system",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.6f)
-            )
+            StaffLoginHeader()
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Login Card
             StaffLoginCard(
                 email = email,
                 onEmailChange = { email = it; viewModel.clearError() },
@@ -113,16 +73,64 @@ fun StaffLoginScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            TextButton(onClick = { /* Contact Support */ }) {
-                Text(
-                    "Locked out? Contact IT Support",
-                    color = Color.White.copy(alpha = 0.5f),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
+            StaffLoginFooter()
             
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun StaffLoginDecorations() {
+    Box(
+        modifier = Modifier
+            .size(300.dp)
+            .offset(x = 100.dp, y = (-100).dp)
+            .clip(CircleShape)
+            .background(Color(0xFF4C84FF).copy(alpha = 0.1f))
+    )
+}
+
+@Composable
+private fun StaffLoginHeader() {
+    Surface(
+        modifier = Modifier.size(80.dp),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White.copy(alpha = 0.1f)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = Icons.Default.Badge,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = Color.White
+            )
+        }
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    Text(
+        text = "Track Internal Portal",
+        style = MaterialTheme.typography.headlineLarge,
+        fontWeight = FontWeight.ExtraBold,
+        color = Color.White
+    )
+    Text(
+        text = "Staff & Driver Management System",
+        style = MaterialTheme.typography.bodyMedium,
+        color = Color.White.copy(alpha = 0.6f)
+    )
+}
+
+@Composable
+private fun StaffLoginFooter() {
+    TextButton(onClick = { /* Contact Support */ }) {
+        Text(
+            "Locked out? Contact IT Support",
+            color = Color.White.copy(alpha = 0.5f),
+            style = MaterialTheme.typography.labelMedium
+        )
     }
 }
 
@@ -155,37 +163,14 @@ private fun StaffLoginCard(
             )
             Spacer(modifier = Modifier.height(24.dp))
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = onEmailChange,
-                label = { Text("Work Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                enabled = !isLoading
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = onPasswordChange,
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = !isLoading,
-                shape = RoundedCornerShape(12.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                trailingIcon = {
-                    IconButton(onClick = onTogglePasswordVisibility) {
-                        Icon(
-                            imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = null
-                        )
-                    }
-                }
+            StaffLoginFields(
+                email = email,
+                onEmailChange = onEmailChange,
+                password = password,
+                onPasswordChange = onPasswordChange,
+                passwordVisible = passwordVisible,
+                onTogglePasswordVisibility = onTogglePasswordVisibility,
+                isLoading = isLoading
             )
 
             if (errorMessage != null) {
@@ -218,6 +203,50 @@ private fun StaffLoginCard(
     }
 }
 
+@Composable
+private fun StaffLoginFields(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    password: String,
+    onPasswordChange: (String) -> Unit,
+    passwordVisible: Boolean,
+    onTogglePasswordVisibility: () -> Unit,
+    isLoading: Boolean
+) {
+    OutlinedTextField(
+        value = email,
+        onValueChange = onEmailChange,
+        label = { Text("Work Email") },
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        enabled = !isLoading
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    OutlinedTextField(
+        value = password,
+        onValueChange = onPasswordChange,
+        label = { Text("Password") },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        enabled = !isLoading,
+        shape = RoundedCornerShape(12.dp),
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        trailingIcon = {
+            IconButton(onClick = onTogglePasswordVisibility) {
+                Icon(
+                    imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = null
+                )
+            }
+        }
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun StaffLoginScreenPreview() {
@@ -225,5 +254,3 @@ fun StaffLoginScreenPreview() {
         StaffLoginScreen()
     }
 }
-
-

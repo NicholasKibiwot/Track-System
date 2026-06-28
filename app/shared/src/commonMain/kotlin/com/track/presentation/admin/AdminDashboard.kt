@@ -25,7 +25,9 @@ import com.track.util.kmpViewModel
 @Composable
 fun AdminDashboard(
     viewModel: SuperAdminViewModel = kmpViewModel(),
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    onAddProductClick: () -> Unit = {},
+    onAddStaffClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val menuItems = listOf(
@@ -77,9 +79,9 @@ fun AdminDashboard(
                 .background(Color(0xFFF8F9FA))
         ) {
             when (selectedTab) {
-                0 -> InventoryManagementScreen(viewModel = viewModel)
+                0 -> InventoryManagementScreen(viewModel = viewModel, onAddProductClick = onAddProductClick)
                 1 -> OrderManagementScreen(viewModel = viewModel)
-                2 -> StaffManagementScreen(viewModel = viewModel)
+                2 -> StaffManagementScreen(viewModel = viewModel, onAddUserClick = onAddStaffClick)
             }
         }
     }

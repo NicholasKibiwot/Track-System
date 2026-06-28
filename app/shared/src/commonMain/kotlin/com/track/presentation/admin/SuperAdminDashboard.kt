@@ -9,7 +9,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SuperAdminDashboard(
     viewModel: SuperAdminViewModel,
-    onLogout: () -> Unit = {}
+    onAddProductClick: () -> Unit = {},
+    onAddStaffClick: () -> Unit = {},
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Orders & Payments", "Staff Management", "Inventory")
@@ -23,12 +24,11 @@ fun SuperAdminDashboard(
             }
             Box(Modifier.fillMaxSize().padding(16.dp)) {
                 when (selectedTab) {
-                    0 -> OrderManagementScreen()
-                    1 -> StaffManagementScreen()
-                    2 -> InventoryManagementScreen()
+                    0 -> OrderManagementScreen(viewModel = viewModel)
+                    1 -> StaffManagementScreen(viewModel = viewModel, onAddUserClick = onAddStaffClick)
+                    2 -> InventoryManagementScreen(viewModel = viewModel, onAddProductClick = onAddProductClick)
                 }
             }
         }
     }
 }
-

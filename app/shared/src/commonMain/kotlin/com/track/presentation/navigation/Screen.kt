@@ -42,6 +42,8 @@ sealed class Screen(
 
     object AdminAddProduct : Screen("admin_add_product")
 
+    object AdminAddUser : Screen("admin_add_user")
+
     // Staff
     object StaffDashboard : Screen("staff_dashboard")
 

@@ -43,24 +43,15 @@ fun StaffNavHost(
     val navController = rememberNavController()
     
     val onLogout = {
-        // Redirect back to debug portal instead of real login
-        navController.navigate("temp_login") {
+        navController.navigate(Screen.StaffLogin.route) {
             popUpTo(0) { inclusive = true }
         }
     }
 
     NavHost(
         navController = navController,
-        startDestination = "temp_login",
+        startDestination = Screen.StaffLogin.route,
     ) {
-        composable("temp_login") {
-            TemporaryLoginScreen(
-                onNavigateToAdmin = { navController.navigate(Screen.AdminDashboard.route) },
-                onNavigateToStaff = { navController.navigate(Screen.StaffDashboard.route) },
-                onNavigateToDriver = { navController.navigate(Screen.DriverDashboard.route) }
-            )
-        }
-
         composable(Screen.StaffLogin.route) {
             StaffLoginScreen(
                 viewModel = authViewModel,
@@ -69,7 +60,7 @@ fun StaffNavHost(
                         popUpTo(Screen.StaffLogin.route) { inclusive = true }
                     }
                 },
-                onBackClick = { /* No back for staff app root login */ }
+                onBackClick = { /* Root */ }
             )
         }
 
