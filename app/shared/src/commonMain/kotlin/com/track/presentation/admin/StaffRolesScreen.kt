@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.track.models.UserRole
 
 @Composable
 fun StaffRolesScreen(
@@ -24,7 +25,7 @@ fun StaffRolesScreen(
     val allUsers by viewModel.allUsers.collectAsState()
 
     val displayList = when (section) {
-        SuperAdminSection.COURIERS -> allUsers.filter { it.role == "courier" || it.role == "driver" }
+        SuperAdminSection.COURIERS -> allUsers.filter { it.role == UserRole.DRIVER }
         else -> staffUsers
     }
     val title = if (section == SuperAdminSection.COURIERS) "Couriers" else "Staff"
@@ -161,19 +162,18 @@ fun StaffRolesScreen(
 }
 
 @Composable
-fun RoleBadge(role: String, modifier: Modifier = Modifier) {
-    val (bg, fg) = when (role.lowercase()) {
-        "superadmin" -> Color(0xFFF3E5F5) to Color(0xFF6A1B9A)
-        "admin" -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
-        "dispatcher" -> Color(0xFFFFF3E0) to Color(0xFFE65100)
-        "courier", "driver" -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
-        "support" -> Color(0xFFFCE4EC) to Color(0xFFC62828)
-        else -> Color(0xFFF5F5F5) to Color(0xFF424242)
+fun RoleBadge(role: UserRole, modifier: Modifier = Modifier) {
+    val (bg, fg) = when (role) {
+        UserRole.SUPER_ADMIN -> Color(0xFFF3E5F5) to Color(0xFF6A1B9A)
+        UserRole.ADMIN -> Color(0xFFE3F2FD) to Color(0xFF1565C0)
+        UserRole.STAFF -> Color(0xFFFFF3E0) to Color(0xFFE65100)
+        UserRole.DRIVER -> Color(0xFFE8F5E9) to Color(0xFF2E7D32)
+        UserRole.CUSTOMER -> Color(0xFFFCE4EC) to Color(0xFFC62828)
     }
     Box(modifier = modifier) {
         Surface(shape = RoundedCornerShape(4.dp), color = bg, modifier = Modifier.wrapContentSize()) {
             Text(
-                role.replaceFirstChar { it.uppercaseChar() },
+                role.name.lowercase().replaceFirstChar { it.uppercaseChar() },
                 color = fg,
                 fontSize = 11.sp,
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)

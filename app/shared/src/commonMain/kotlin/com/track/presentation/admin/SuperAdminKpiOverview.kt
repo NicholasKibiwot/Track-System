@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.track.models.PaymentStatus
 
 // ─── KPI overview (main dashboard screen) ────────────────────────────────────
 
@@ -129,10 +130,10 @@ fun SuperAdminKpiOverview(viewModel: SuperAdminViewModel) {
                         orders.take(8).forEach { order ->
                             DeliveryRow(
                                 trackingId = order.id,
-                                customer = order.userId,
+                                customer = order.customerName,
                                 status = order.orderStatus.name,
-                                paymentStatus = if (order.isPaid) "Paid" else "Pending",
-                                courier = order.courierId ?: "–"
+                                paymentStatus = if (order.paymentStatus == PaymentStatus.PAID) "Paid" else "Pending",
+                                courier = order.driverName ?: "–"
                             )
                             HorizontalDivider(modifier = Modifier.padding(vertical = 2.dp))
                         }

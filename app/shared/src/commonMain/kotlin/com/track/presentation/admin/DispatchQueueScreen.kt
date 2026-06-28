@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.domain.models.OrderStatus
+import com.track.models.OrderStatus
 
 @Composable
 fun DispatchQueueScreen(viewModel: SuperAdminViewModel) {
@@ -76,9 +76,9 @@ fun DispatchQueueScreen(viewModel: SuperAdminViewModel) {
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text("#${order.id.take(10)}", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                                Text("Customer: ${order.userId.take(16)}", fontSize = 12.sp,
+                                Text("Customer: ${order.customerName.take(16)}", fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text("To: ${order.deliveryAddress?.take(24) ?: "Unknown"}",
+                                Text("To: ${order.destination.take(24)}",
                                     fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             // Priority badge

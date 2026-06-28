@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.domain.models.OrderStatus
+import com.track.models.OrderStatus
+import com.track.models.PaymentStatus
 
 @Composable
 fun DeliveriesTableScreen(viewModel: SuperAdminViewModel) {
@@ -25,7 +26,7 @@ fun DeliveriesTableScreen(viewModel: SuperAdminViewModel) {
         val matchStatus = statusFilter == "All" || order.orderStatus.name.contains(statusFilter, ignoreCase = true)
         val matchSearch = searchQuery.isEmpty() ||
             order.id.contains(searchQuery, ignoreCase = true) ||
-            order.userId.contains(searchQuery, ignoreCase = true)
+            order.customerName.contains(searchQuery, ignoreCase = true)
         matchStatus && matchSearch
     }
 
@@ -85,15 +86,15 @@ fun DeliveriesTableScreen(viewModel: SuperAdminViewModel) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(order.id.take(12), modifier = Modifier.weight(1.5f), fontSize = 12.sp)
-                                Text(order.userId.take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
-                                Text((order.courierId ?: "–").take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
-                                Text(order.pickupAddress?.take(10) ?: "–", modifier = Modifier.weight(1f), fontSize = 12.sp)
-                                Text(order.deliveryAddress?.take(10) ?: "–", modifier = Modifier.weight(1f), fontSize = 12.sp)
+                                Text(order.customerName.take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
+                                Text((order.driverName ?: "–").take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
+                                Text(order.origin.take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
+                                Text(order.destination.take(10), modifier = Modifier.weight(1f), fontSize = 12.sp)
                                 Box(modifier = Modifier.weight(1f)) { StatusBadge(order.orderStatus.name) }
                                 Box(modifier = Modifier.weight(0.8f)) {
-                                    PaymentBadge(if (order.isPaid) "Paid" else "Pending")
+                                    PaymentBadge(if (order.paymentStatus == PaymentStatus.PAID) "Paid" else "Pending")
                                 }
-                                Text(order.estimatedDelivery ?: "–", modifier = Modifier.weight(0.8f), fontSize = 11.sp)
+                                Text("–", modifier = Modifier.weight(0.8f), fontSize = 11.sp)
                                 Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     IconButton(
                                         onClick = {},
@@ -104,7 +105,7 @@ fun DeliveriesTableScreen(viewModel: SuperAdminViewModel) {
                                         modifier = Modifier.size(28.dp)
                                     ) { Icon(Icons.Default.AltRoute, null, Modifier.size(14.dp)) }
                                     IconButton(
-                                        onClick = { viewModel.updateOrderStatus(order.id, OrderStatus.CANCELED) },
+                                        onClick = { viewModel.updateOrderStatus(order.id, OrderStatus.CANCELLED) },
                                         modifier = Modifier.size(28.dp)
                                     ) { Icon(Icons.Default.Cancel, null, Modifier.size(14.dp)) }
                                 }
@@ -113,6 +114,34 @@ fun DeliveriesTableScreen(viewModel: SuperAdminViewModel) {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatusFilterDropdown(selectedStatus: String, onStatusSelected: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    val statuses = listOf("All", "Pending", "Processing", "InTransit", "Delivered", "Cancelled")
+
+    Box {
+        OutlinedButton(
+            onClick = { expanded = true },
+            shape = RoundedCornerShape(22.dp),
+            modifier = Modifier.height(44.dp)
+        ) {
+            Text(selectedStatus, fontSize = 12.sp)
+            Icon(Icons.Default.ArrowDropDown, null)
+        }
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            statuses.forEach { status ->
+                DropdownMenuItem(
+                    text = { Text(status) },
+                    onClick = {
+                        onStatusSelected(status)
+                        expanded = false
+                    }
+                )
             }
         }
     }
