@@ -224,6 +224,7 @@ private fun NavGraphBuilder.addPublicRoutes(
             onNavigateToProductDetails = { productId ->
                 navController.navigate("product_details/$productId")
             },
+            viewModel = customerViewModel
         )
     }
 
