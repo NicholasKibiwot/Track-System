@@ -71,23 +71,11 @@ fun AppNavHost(
 
         // Auto-redirect for Admin/Staff/Driver on Web
         if (isWeb && currentUser != null) {
-            when (currentUser?.role) {
-                UserRole.SUPER_ADMIN, UserRole.ADMIN -> {
-                    navController.navigate(Screen.AdminDashboard.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                    }
+            val destination = getWebRedirectDestination(currentUser?.role)
+            if (destination != null) {
+                navController.navigate(destination) {
+                    popUpTo(Screen.Welcome.route) { inclusive = true }
                 }
-                UserRole.STAFF -> {
-                    navController.navigate(Screen.StaffDashboard.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                    }
-                }
-                UserRole.DRIVER -> {
-                    navController.navigate(Screen.DriverDashboard.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                    }
-                }
-                else -> {}
             }
         }
     }
@@ -97,13 +85,7 @@ fun AppNavHost(
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = if (isWeb && currentUser != null) {
-                when(currentUser?.role) {
-                    UserRole.SUPER_ADMIN, UserRole.ADMIN -> Screen.AdminDashboard.route
-                    UserRole.STAFF -> Screen.StaffDashboard.route
-                    else -> Screen.Welcome.route
-                }
-            } else Screen.Welcome.route,
+            startDestination = getStartDestination(isWeb, currentUser),
             modifier = Modifier.padding(padding)
         ) {
             addPublicRoutes(navController, customerViewModel, authViewModel)
@@ -114,6 +96,26 @@ fun AppNavHost(
             addDriverRoutes(navController)
         }
     }
+}
+
+private fun getWebRedirectDestination(role: UserRole?): String? {
+    return when (role) {
+        UserRole.SUPER_ADMIN, UserRole.ADMIN -> Screen.AdminDashboard.route
+        UserRole.STAFF -> Screen.StaffDashboard.route
+        UserRole.DRIVER -> Screen.DriverDashboard.route
+        else -> null
+    }
+}
+
+private fun getStartDestination(isWeb: Boolean, currentUser: User?): String {
+    if (isWeb && currentUser != null) {
+        return when (currentUser.role) {
+            UserRole.SUPER_ADMIN, UserRole.ADMIN -> Screen.AdminDashboard.route
+            UserRole.STAFF -> Screen.StaffDashboard.route
+            else -> Screen.Welcome.route
+        }
+    }
+    return Screen.Welcome.route
 }
 
 private fun NavGraphBuilder.addDriverRoutes(
@@ -386,33 +388,10 @@ private fun NavGraphBuilder.addCustomerRoutes(
         arguments = listOf(navArgument("orderId") { type = NavType.StringType }),
     ) { backStackEntry ->
         val orderId = backStackEntry.arguments?.getString("orderId") ?: return@composable
-        val order = customerViewModel.getOrderById(orderId)
-        val trackingSuccess by customerViewModel.orderSuccess.collectAsState()
-
-        Box(
-            Modifier.fillMaxSize().padding(16.dp),
-            contentAlignment = Alignment.Center,
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                if (trackingSuccess != null) {
-                    Text(
-                        "SUCCESS!",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                    Text(
-                        "Tracking ID: $trackingSuccess",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Button(onClick = { customerViewModel.clearOrderSuccess() }) {
-                        Text("OK")
-                    }
-                } else {
-                    Text("Tracking Order: $orderId")
-                    Text("Tracking Number: ${order?.trackingNumber ?: "Loading..."}")
-                }
-            }
-        }
+        OrderTrackingScreen(
+            orderId = orderId,
+            viewModel = customerViewModel,
+            onBackClick = { navController.popBackStack() }
+        )
     }
 }

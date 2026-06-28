@@ -16,14 +16,17 @@ import androidx.compose.ui.unit.sp
 import com.track.util.kmpViewModel
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @Composable
 fun OrderManagementScreen(viewModel: SuperAdminViewModel = kmpViewModel()) {
     val orders by viewModel.orders.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    var selectedTab by remember { mutableStateOf("Delivered") }
-    val tabs = listOf("Delivered", "Processing", "Cancelled")
+    var selectedTab by remember { mutableStateOf("Processing") }
+    val tabs = listOf("Processing", "Delivered", "Cancelled")
 
     Column(modifier = Modifier.fillMaxSize()) {
         OrderManagementHeader()
@@ -40,7 +43,7 @@ fun OrderManagementScreen(viewModel: SuperAdminViewModel = kmpViewModel()) {
             LoadingIndicator()
         } else {
             val filteredOrders = filterOrders(orders, selectedTab)
-            OrderList(filteredOrders)
+            OrderList(filteredOrders, viewModel)
         }
     }
 }
@@ -86,14 +89,16 @@ private fun OrderManagementTabs(
 }
 
 @Composable
-private fun OrderList(orders: List<Order>) {
+private fun OrderList(orders: List<Order>, viewModel: SuperAdminViewModel) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(orders) { order ->
-            AdminOrderCard(order = order)
+            AdminOrderCard(order = order, onUpdateStatus = { newStatus ->
+                viewModel.updateOrderStatus(order.id, newStatus)
+            })
         }
     }
 }
@@ -120,26 +125,80 @@ private fun filterOrders(orders: List<Order>, selectedTab: String): List<Order> 
 }
 
 @Composable
-fun AdminOrderCard(order: Order) {
+fun AdminOrderCard(order: Order, onUpdateStatus: (OrderStatus) -> Unit) {
+    var showStatusMenu by remember { mutableStateOf(false) }
+    val dateString = remember(order.createdAt) {
+        try {
+            val instant = Instant.fromEpochSeconds(order.createdAt.seconds)
+            val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+            "${localDateTime.dayOfMonth}/${localDateTime.monthNumber}/${localDateTime.year}"
+        } catch (_: Exception) {
+            "Recent"
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         color = Color.White,
         shadowElevation = 2.dp
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Order №${order.trackingNumber}", fontWeight = FontWeight.Bold)
-                Text("05-12-2023", color = Color.Gray) // Placeholder date
+                Text(dateString, color = Color.Gray, fontSize = 12.sp)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
             
             OrderCardDetails(order)
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
-            OrderCardFooter(order)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box {
+                    OutlinedButton(
+                        onClick = { showStatusMenu = true },
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text("Update Status", fontSize = 12.sp, color = Color.Black)
+                    }
+
+                    DropdownMenu(
+                        expanded = showStatusMenu,
+                        onDismissRequest = { showStatusMenu = false }
+                    ) {
+                        OrderStatus.entries.forEach { status ->
+                            DropdownMenuItem(
+                                text = { Text(status.name) },
+                                onClick = {
+                                    onUpdateStatus(status)
+                                    showStatusMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
+                
+                Surface(
+                    color = getStatusColor(order.orderStatus).copy(alpha = 0.1f),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        text = order.orderStatus.name,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = getStatusColor(order.orderStatus),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
+            }
         }
     }
 }
@@ -147,52 +206,31 @@ fun AdminOrderCard(order: Order) {
 @Composable
 private fun OrderCardDetails(order: Order) {
     Row(Modifier.fillMaxWidth()) {
-        Text("Tracking number: ", color = Color.Gray)
-        Text(order.trackingNumber.ifBlank { order.id }, fontWeight = FontWeight.Medium)
-    }
-
-    val branches = order.items.map { it.branch }.distinct().filter { it.isNotBlank() }
-    if (branches.isNotEmpty()) {
-        Row(Modifier.fillMaxWidth()) {
-            Text("From Branch: ", color = Color.Gray)
-            Text(branches.joinToString(", "), fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-        }
+        Text("Customer: ", color = Color.Gray, fontSize = 13.sp)
+        Text(order.customerName, fontWeight = FontWeight.Medium, fontSize = 13.sp)
     }
     
+    Spacer(Modifier.height(4.dp))
+
+    Row(Modifier.fillMaxWidth()) {
+        Text("Destination: ", color = Color.Gray, fontSize = 13.sp)
+        Text(order.destination, fontWeight = FontWeight.Medium, fontSize = 13.sp, maxLines = 1)
+    }
+
+    Spacer(Modifier.height(8.dp))
+    
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Row {
-            Text("Quantity: ", color = Color.Gray)
-            Text("${order.items.sumOf { it.quantity }}", fontWeight = FontWeight.Medium)
+            Text("Items: ", color = Color.Gray, fontSize = 13.sp)
+            Text("${order.items.sumOf { it.quantity }}", fontWeight = FontWeight.Medium, fontSize = 13.sp)
         }
         Row {
-            Text("Total Amount: ", color = Color.Gray)
-            Text("KES ${order.totalAmount}", fontWeight = FontWeight.Bold)
+            Text("Total: ", color = Color.Gray, fontSize = 13.sp)
+            Text("KES ${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFFB12704))
         }
-    }
-}
-
-@Composable
-private fun OrderCardFooter(order: Order) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        OutlinedButton(
-            onClick = { /* Details */ },
-            shape = RoundedCornerShape(24.dp)
-        ) {
-            Text("Details", color = Color.Black)
-        }
-        
-        Text(
-            text = order.orderStatus.name,
-            color = getStatusColor(order.orderStatus),
-            fontWeight = FontWeight.Medium
-        )
     }
 }
 

@@ -264,7 +264,7 @@ open class CustomerViewModel
                                 productName = cartItem.product.name,
                                 quantity = cartItem.quantity,
                                 unitPrice = cartItem.product.price,
-                                branch = "", // Resetting or mapping branch if needed
+                                branch = cartItem.product.branch,
                                 imageUrl = bestImageUrl.ifBlank { null },
                             )
                         }

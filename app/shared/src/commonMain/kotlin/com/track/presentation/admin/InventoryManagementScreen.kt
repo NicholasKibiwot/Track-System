@@ -12,9 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.SubcomposeAsyncImage
 import com.track.util.kmpViewModel
 import com.track.domain.models.Product
 
@@ -102,30 +105,48 @@ fun InventoryItemRow(product: Product) {
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier
+            val displayImageUrl = product.images.firstOrNull()?.storage?.webpUrl 
+                ?: product.images.firstOrNull()?.storage?.webpPath 
+                ?: product.imageUrl
+
+            SubcomposeAsyncImage(
+                model = displayImageUrl,
+                contentDescription = product.name,
+                modifier = Modifier
                     .size(60.dp)
-                    .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Print, contentDescription = null, tint = Color.LightGray)
-            }
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFF5F5F5)),
+                contentScale = ContentScale.Crop,
+                error = {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Print, contentDescription = null, tint = Color.LightGray)
+                    }
+                }
+            )
             
             Spacer(Modifier.width(16.dp))
             
             Column(Modifier.weight(1f)) {
-                Text(product.name, fontWeight = FontWeight.Bold)
+                Text(product.name, fontWeight = FontWeight.Bold, maxLines = 1)
                 Text("KES ${product.price}", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                Text("Branch: ${product.branch.ifBlank { "Main Store" }}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
+                Text("Branch: ${product.branch.ifBlank { "Nairobi HQ" }}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.secondary)
             }
             
             Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    "Stock: ${product.stock}",
-                    color = if (product.stock < 5) Color.Red else Color.Black,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(product.category, fontSize = 10.sp, color = Color.Gray)
+                Surface(
+                    color = if (product.stock < 5) Color(0xFFFFEBEE) else Color(0xFFE8F5E9),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    Text(
+                        "Stock: ${product.stock}",
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                        color = if (product.stock < 5) Color.Red else Color(0xFF2E7D32),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(product.category.replace("_", " "), fontSize = 10.sp, color = Color.Gray)
             }
         }
     }
