@@ -201,7 +201,7 @@ private fun NavGraphBuilder.addPublicRoutes(
     }
 
     composable(Screen.Home.route) {
-        ModernHomeScreen(
+        GoMobileHomeScreen(
             onNavigateToCart = { navController.navigate(Screen.Cart.route) },
             onNavigateToProfile = {
                 if (authViewModel.isAuthenticated()) {
@@ -216,6 +216,7 @@ private fun NavGraphBuilder.addPublicRoutes(
             onNavigateToCategory = { categoryId ->
                 navController.navigate("category_products/$categoryId")
             },
+            onNavigateToOrders = { navController.navigate(Screen.MyOrders.route) },
             viewModel = customerViewModel
         )
     }
@@ -309,7 +310,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     showMessage: (String) -> Unit,
 ) {
     composable(Screen.Cart.route) {
-        ModernCartScreen(
+        GoMobileCartScreen(
             viewModel = customerViewModel,
             onNavigateToCheckout = {
                 if (currentUser == null) {
@@ -335,7 +336,7 @@ private fun NavGraphBuilder.addCustomerRoutes(
     }
 
     composable(Screen.MyOrders.route) {
-        MyOrdersScreen(
+        GoMobileOrdersScreen(
             onBackClick = { navController.popBackStack() },
             onOrderClick = { orderId -> navController.navigate("tracking/$orderId") },
             viewModel = customerViewModel
