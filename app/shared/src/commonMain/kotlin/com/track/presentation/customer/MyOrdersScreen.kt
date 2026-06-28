@@ -12,13 +12,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.SubcomposeAsyncImage
 import com.track.domain.models.Order
 import com.track.domain.models.OrderStatus
 import com.track.presentation.customer.CustomerViewModel
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,8 +34,8 @@ fun MyOrdersScreen(
     viewModel: CustomerViewModel
 ) {
     val orders by viewModel.myOrders.collectAsState()
-    var selectedTab by remember { mutableStateOf("Delivered") }
-    val tabs = listOf("Pending Payment", "Delivered", "Processing")
+    var selectedTab by remember { mutableStateOf("All") }
+    val tabs = listOf("All", "Pending Payment", "Delivered", "Processing")
 
     Scaffold(
         topBar = {
@@ -133,6 +139,16 @@ private fun OrderList(
 
 @Composable
 fun CustomerOrderCard(order: Order, onClick: () -> Unit) {
+    val dateString = remember(order.createdAt) {
+        try {
+            val instant = Instant.fromEpochSeconds(order.createdAt.seconds)
+            val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+            "${localDateTime.dayOfMonth}/${localDateTime.monthNumber}/${localDateTime.year}"
+        } catch (_: Exception) {
+            "Recent"
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -152,30 +168,59 @@ fun CustomerOrderCard(order: Order, onClick: () -> Unit) {
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "12-5-2022", // Placeholder date, should use order.createdAt
+                    text = dateString,
                     color = Color.Gray,
                     fontSize = 12.sp
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Row {
-                Text("Tracking number: ", color = Color.Gray, fontSize = 12.sp)
-                Text(order.trackingNumber, fontWeight = FontWeight.Medium, fontSize = 12.sp)
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row {
-                    Text("Quantity: ", color = Color.Gray, fontSize = 12.sp)
-                    Text("${order.items.sumOf { it.quantity }}", fontWeight = FontWeight.Medium, fontSize = 12.sp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Item Preview (up to 3 items)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    order.items.take(3).forEach { item ->
+                        SubcomposeAsyncImage(
+                            model = item.imageUrl,
+                            contentDescription = item.productName,
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFF8F9FA)),
+                            contentScale = ContentScale.Crop,
+                            error = {
+                                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Default.Search, null, tint = Color.LightGray, modifier = Modifier.size(20.dp))
+                                }
+                            }
+                        )
+                    }
+                    if (order.items.size > 3) {
+                        Box(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(Color(0xFFEEEEEE)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("+${order.items.size - 3}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
-                Row {
-                    Text("Total Amount: ", color = Color.Gray, fontSize = 12.sp)
-                    Text("${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+
+                Spacer(Modifier.width(16.dp))
+
+                Column {
+                    Row {
+                        Text("Quantity: ", color = Color.Gray, fontSize = 12.sp)
+                        Text("${order.items.sumOf { it.quantity }}", fontWeight = FontWeight.Medium, fontSize = 12.sp)
+                    }
+                    Row {
+                        Text("Total: ", color = Color.Gray, fontSize = 12.sp)
+                        Text("KES ${order.totalAmount}", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
                 }
             }
+
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -190,9 +235,18 @@ fun CustomerOrderCard(order: Order, onClick: () -> Unit) {
                 ) {
                     Text("Details", color = Color.Black, fontSize = 12.sp)
                 }
+
+                val statusColor = when (order.orderStatus) {
+                    OrderStatus.DELIVERED -> Color(0xFF4CAF50)
+                    OrderStatus.CANCELLED -> Color(0xFFF44336)
+                    OrderStatus.PENDING -> Color(0xFFFF9800)
+                    OrderStatus.SHIPPED, OrderStatus.INTRANSIT -> Color(0xFF2196F3)
+                    else -> Color(0xFF9E9E9E)
+                }
+
                 Text(
                     text = order.orderStatus.name,
-                    color = if (order.orderStatus == OrderStatus.DELIVERED) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                    color = statusColor,
                     fontWeight = FontWeight.Bold,
                     fontSize = 12.sp
                 )
