@@ -8,6 +8,7 @@ import com.track.domain.models.OrderItem
 import com.track.domain.models.OrderStatus
 import com.track.domain.models.Product
 import com.track.domain.models.TrackingRecord
+import com.track.models.Category
 import com.track.util.CommonHiltViewModel
 import com.track.util.TrackTimestamp
 import com.track.util.randomUUID
@@ -23,6 +24,11 @@ open class CustomerViewModel
     constructor(
         private val repository: FirestoreRepository,
     ) : ViewModel() {
+        // ── Categories ────────────────────────────────────────────────────────────
+
+        private val _categories = MutableStateFlow<List<Category>>(emptyList())
+        val categories: StateFlow<List<Category>> = _categories.asStateFlow()
+
         // ── Products ──────────────────────────────────────────────────────────────
 
         private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -73,6 +79,7 @@ open class CustomerViewModel
         // ─────────────────────────────────────────────────────────────────────────
 
         init {
+            loadCategories()
             loadProducts()
         }
 
@@ -92,6 +99,18 @@ open class CustomerViewModel
         }
 
         // ── Data loaders ──────────────────────────────────────────────────────────
+
+        private fun loadCategories() {
+            viewModelScope.launch {
+                try {
+                    repository.getCategoriesFlow().collect { list ->
+                        _categories.value = list
+                    }
+                } catch (e: Exception) {
+                    _errorMessage.value = "Failed to load categories: ${e.message}"
+                }
+            }
+        }
 
         private fun loadProducts() {
             viewModelScope.launch {
@@ -235,14 +254,18 @@ open class CustomerViewModel
                 try {
                     val orderItems =
                         _cartItems.value.map { cartItem ->
+                            val bestImageUrl = cartItem.product.images.firstOrNull()?.storage?.webpUrl 
+                                ?: cartItem.product.images.firstOrNull()?.storage?.webpPath 
+                                ?: cartItem.product.imageUrl
+
                             OrderItem(
                                 id = randomUUID(),
                                 productId = cartItem.product.id,
                                 productName = cartItem.product.name,
                                 quantity = cartItem.quantity,
                                 unitPrice = cartItem.product.price,
-                                branch = cartItem.product.branch, // Carry branch info from product
-                                imageUrl = cartItem.product.imageUrl.ifBlank { null },
+                                branch = "", // Resetting or mapping branch if needed
+                                imageUrl = bestImageUrl.ifBlank { null },
                             )
                         }
 

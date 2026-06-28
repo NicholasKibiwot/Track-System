@@ -7,7 +7,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Cable
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Print
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ViewInAr
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,19 +44,39 @@ fun ModernHomeScreen(
     onNavigateToCart: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToProductDetails: (String) -> Unit,
+    onNavigateToCategory: (String) -> Unit,
     viewModel: CustomerViewModel = kmpViewModel<CustomerViewModel>(),
 ) {
     val products by viewModel.products.collectAsState()
+    val dbCategories by viewModel.categories.collectAsState()
     val isWide = isWideScreen()
     val scrollState = rememberScrollState()
 
-    val categories = listOf(
-        ModernCategory("Industrial Printers", Icons.Default.Print, Color(0xFFE3F2FD)),
-        ModernCategory("3D Printers", Icons.Default.ViewInAr, Color(0xFFF3E5F5)),
-        ModernCategory("Spare Parts", Icons.Default.Settings, Color(0xFFE8F5E9)),
-        ModernCategory("Ink & Toner", Icons.Default.Palette, Color(0xFFFFF3E0)),
-        ModernCategory("Accessories", Icons.Default.Cable, Color(0xFFFFEBEE)),
-    )
+    val categories = dbCategories.map { category ->
+        val icon = when (category.id) {
+            "OFFICE_PRINTERS" -> Icons.Default.Print
+            "POS_RETAIL_PRINTERS" -> Icons.Default.ShoppingCart
+            "COMMERCIAL_GRAPHICS_PRINTERS" -> Icons.Default.Category
+            "INDUSTRIAL_SPECIALTY_PRINTERS" -> Icons.Default.Settings
+            "REPAIRS_SERVICES" -> Icons.Default.Build
+            else -> Icons.Default.Category
+        }
+        val color = when (category.id) {
+            "OFFICE_PRINTERS" -> Color(0xFFE3F2FD)
+            "POS_RETAIL_PRINTERS" -> Color(0xFFF3E5F5)
+            "COMMERCIAL_GRAPHICS_PRINTERS" -> Color(0xFFE8F5E9)
+            "INDUSTRIAL_SPECIALTY_PRINTERS" -> Color(0xFFFFF3E0)
+            "REPAIRS_SERVICES" -> Color(0xFFFFEBEE)
+            else -> Color(0xFFF5F5F5)
+        }
+        ModernCategory(category.id, category.name, icon, color)
+    }.ifEmpty {
+        listOf(
+            ModernCategory("OFFICE_PRINTERS", "Office Printers", Icons.Default.Print, Color(0xFFE3F2FD)),
+            ModernCategory("INDUSTRIAL_SPECIALTY_PRINTERS", "Industrial", Icons.Default.Settings, Color(0xFFFFF3E0)),
+            ModernCategory("REPAIRS_SERVICES", "Repairs", Icons.Default.Build, Color(0xFFFFEBEE)),
+        )
+    }
 
     Scaffold(
         topBar = { ModernTopBar(onNavigateToCart, onNavigateToProfile, isWide) }
@@ -67,7 +98,7 @@ fun ModernHomeScreen(
                     .padding(horizontal = if (isWide) 24.dp else 12.dp)
             ) {
                 // Category Strips
-                ModernCategoryStrip(categories)
+                ModernCategoryStrip(categories, onNavigateToCategory)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -77,11 +108,15 @@ fun ModernHomeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 
                 // Recommendation Section
-                ModernProductRow("Trending in 3D Printing", products.filter { it.category.contains("3D", true) }, onNavigateToProductDetails)
+                ModernProductRow("Featured Office Printers", products.filter { it.category == "OFFICE_PRINTERS" }, onNavigateToProductDetails)
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                ModernProductRow("Essential Spare Parts", products.filter { it.category.contains("Part", true) }, onNavigateToProductDetails)
+                ModernProductRow("POS & Retail Solutions", products.filter { it.category == "POS_RETAIL_PRINTERS" }, onNavigateToProductDetails)
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                ModernProductRow("Professional Accessories", products.filter { it.category == "ACCESSORIES" }, onNavigateToProductDetails)
 
                 Spacer(modifier = Modifier.height(48.dp))
             }
@@ -239,7 +274,7 @@ fun ModernHeroBanner(isWide: Boolean) {
 }
 
 @Composable
-fun ModernCategoryStrip(categories: List<ModernCategory>) {
+fun ModernCategoryStrip(categories: List<ModernCategory>, onClick: (String) -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -253,7 +288,10 @@ fun ModernCategoryStrip(categories: List<ModernCategory>) {
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             items(categories) { category ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(100.dp)) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.width(100.dp).clickable { onClick(category.id) }
+                ) {
                     Surface(
                         shape = CircleShape,
                         color = category.color,
@@ -388,4 +426,4 @@ fun ModernProductRow(title: String, products: List<Product>, onClick: (String) -
     }
 }
 
-data class ModernCategory(val name: String, val icon: ImageVector, val color: Color)
+data class ModernCategory(val id: String, val name: String, val icon: ImageVector, val color: Color)

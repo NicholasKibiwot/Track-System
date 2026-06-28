@@ -14,6 +14,7 @@ import com.track.domain.models.TrackingLocation
 import com.track.domain.models.TrackingRecord
 import com.track.domain.models.User
 import com.track.domain.models.UserRole
+import com.track.models.Category
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -25,7 +26,19 @@ import javax.inject.Singleton
 class AndroidFirestoreRepository @Inject constructor(
     private val db: FirebaseFirestore,
 ) : FirestoreRepository {
-    
+
+    override fun getCategoriesFlow(): Flow<List<Category>> = callbackFlow {
+        val listener = db.collection("categories")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error)
+                    return@addSnapshotListener
+                }
+                trySend(snapshot?.toObjects(Category::class.java) ?: emptyList())
+            }
+        awaitClose { listener.remove() }
+    }
+
     override fun getOrdersFlow(): Flow<List<Order>> = callbackFlow {
         val listener = db.collection("orders")
             .orderBy("createdAt", Query.Direction.DESCENDING)

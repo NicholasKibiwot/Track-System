@@ -224,7 +224,23 @@ private fun NavGraphBuilder.addPublicRoutes(
             onNavigateToProductDetails = { productId ->
                 navController.navigate("product_details/$productId")
             },
+            onNavigateToCategory = { categoryId ->
+                navController.navigate("category_products/$categoryId")
+            },
             viewModel = customerViewModel
+        )
+    }
+
+    composable(
+        route = "category_products/{categoryId}",
+        arguments = listOf(navArgument("categoryId") { type = NavType.StringType }),
+    ) { backStackEntry ->
+        val categoryId = backStackEntry.arguments?.getString("categoryId") ?: return@composable
+        CategoryProductsScreen(
+            categoryId = categoryId,
+            viewModel = customerViewModel,
+            onBackClick = { navController.popBackStack() },
+            onProductClick = { productId -> navController.navigate("product_details/$productId") }
         )
     }
 

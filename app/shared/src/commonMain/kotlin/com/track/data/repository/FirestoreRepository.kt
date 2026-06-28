@@ -8,9 +8,11 @@ import com.track.domain.models.StaffProfile
 import com.track.domain.models.TrackingLocation
 import com.track.domain.models.TrackingRecord
 import com.track.domain.models.User
+import com.track.models.Category
 import kotlinx.coroutines.flow.Flow
 
 interface FirestoreRepository {
+    fun getCategoriesFlow(): Flow<List<Category>>
     fun getOrdersFlow(): Flow<List<Order>>
     fun getOrdersByCustomerFlow(customerId: String): Flow<List<Order>>
     fun getOrdersByDriverFlow(driverId: String): Flow<List<Order>>

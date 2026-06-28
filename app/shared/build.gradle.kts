@@ -60,6 +60,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.coil.network)
         }
         commonMain.dependencies {
             api(projects.core)
@@ -78,6 +79,7 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(compose.materialIconsExtended)
             implementation("javax.inject:javax.inject:1")
+            implementation(libs.coil.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
