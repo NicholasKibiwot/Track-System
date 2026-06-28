@@ -65,6 +65,14 @@ data class Category(
 )
 
 @Serializable
+enum class MachineType(val displayName: String) {
+    SMALL("Small Desktop"),
+    MEDIUM("Office/Commercial"),
+    LARGE("Large Format"),
+    BILLBOARD("Billboard / Industrial")
+}
+
+@Serializable
 data class Product(
     val id: String = "",
     val name: String = "",
@@ -73,6 +81,7 @@ data class Product(
     val brand: String = "",
     val description: String = "",
     val price: Double = 0.0,
+    val imageUrl: String = "", // Legacy support
     val currency: String = "KES",
     val stockStatus: String = "IN_STOCK",
     val stock: Int = 0, // Keep for backward compatibility
@@ -80,7 +89,11 @@ data class Product(
     val compatibleModels: List<String> = emptyList(),
     val compatiblePrinterTypes: List<PrinterType> = emptyList(),
     val rating: Double = 0.0,
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
+    val addedBy: String = "",
+    val branch: String = "",
+    val sizes: List<String> = emptyList(),
+    val colors: List<String> = emptyList()
 )
 
 @Serializable

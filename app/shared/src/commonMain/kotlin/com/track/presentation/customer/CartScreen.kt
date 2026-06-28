@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.track.models.Product
 import com.track.presentation.customer.CustomerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,7 +157,7 @@ fun CartItemRow(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(item.product.name, fontWeight = FontWeight.Bold, maxLines = 1)
-                Text(item.product.category, color = Color.Gray, fontSize = 12.sp)
+                Text(item.product.category.displayName, color = Color.Gray, fontSize = 12.sp)
                 Text(
                     "$${item.product.price}",
                     fontWeight = FontWeight.Bold,

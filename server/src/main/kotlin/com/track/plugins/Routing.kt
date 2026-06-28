@@ -20,6 +20,8 @@ fun Application.configureRouting() {
         vehicleRoutes()
         packageRoutes()
         checkInRoutes()
+        orderRoutes()
+        paymentRoutes()
         seedRoutes()
     }
 }

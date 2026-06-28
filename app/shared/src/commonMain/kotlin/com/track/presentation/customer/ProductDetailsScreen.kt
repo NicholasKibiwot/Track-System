@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.domain.models.Product
+import com.track.models.Product
 import com.track.presentation.customer.CustomerViewModel
 import com.track.util.isWideScreen
 
@@ -221,7 +221,7 @@ private fun ProductHeader(product: Product) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            product.category.uppercase(),
+            product.category.name.uppercase(),
             color = Color.Gray,
             style = MaterialTheme.typography.labelLarge,
             letterSpacing = 1.sp

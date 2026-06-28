@@ -5,15 +5,15 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
-import com.track.domain.models.GeoLocation
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
-import com.track.domain.models.StaffProfile
-import com.track.domain.models.TrackingLocation
-import com.track.domain.models.TrackingRecord
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.GeoLocation
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.Product
+import com.track.models.StaffProfile
+import com.track.models.TrackingLocation
+import com.track.models.TrackingRecord
+import com.track.models.User
+import com.track.models.UserRole
 import com.track.models.Category
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -206,6 +206,16 @@ class AndroidFirestoreRepository @Inject constructor(
 
     override suspend fun updateProductStock(productId: String, newStock: Int) {
         db.collection("products").document(productId).update("stock", newStock).await()
+    }
+
+    override suspend fun seedProducts(products: List<Product>) {
+        val batch = db.batch()
+        products.forEach { product ->
+            val docRef = if (product.id.isBlank()) db.collection("products").document() else db.collection("products").document(product.id)
+            val finalProduct = if (product.id.isBlank()) product.copy(id = docRef.id) else product
+            batch.set(docRef, finalProduct)
+        }
+        batch.commit().await()
     }
 
     override suspend fun getOrderById(orderId: String): Order? = try {

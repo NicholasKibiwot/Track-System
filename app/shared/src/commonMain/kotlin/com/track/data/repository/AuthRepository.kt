@@ -1,7 +1,7 @@
 package com.track.data.repository
 
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.User
+import com.track.models.UserRole
 
 interface AuthRepository {
     suspend fun signIn(email: String, password: String): Result<UserRole>

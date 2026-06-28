@@ -19,8 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.util.kmpViewModel
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.User
+import com.track.models.UserRole
 
 @Composable
 fun StaffManagementScreen(

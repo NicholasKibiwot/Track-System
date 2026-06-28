@@ -29,7 +29,7 @@ import coil3.compose.AsyncImage
 import coil3.compose.SubcomposeAsyncImage
 import com.track.util.kmpViewModel
 import com.track.data.FakeData
-import com.track.domain.models.Product
+import com.track.models.Product
 import com.track.models.Category
 import com.track.presentation.customer.CustomerViewModel
 

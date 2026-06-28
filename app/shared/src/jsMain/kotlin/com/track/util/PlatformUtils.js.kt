@@ -3,11 +3,6 @@ package com.track.util
 import kotlin.js.Date
 import kotlin.random.Random
 
-actual fun getCurrentTimestamp(): TrackTimestamp {
-    val now = Date.now().toLong()
-    return TrackTimestamp(now / 1000, ((now % 1000) * 1000000).toInt())
-}
-
 actual fun getCurrentTimeMillis(): Long = Date.now().toLong()
 
 actual fun randomUUID(): String {

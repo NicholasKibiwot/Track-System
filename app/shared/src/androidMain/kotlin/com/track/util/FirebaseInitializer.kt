@@ -3,8 +3,8 @@ package com.track.util
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.User
+import com.track.models.UserRole
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

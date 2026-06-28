@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.AuthRepository
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.User
+import com.track.models.UserRole
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

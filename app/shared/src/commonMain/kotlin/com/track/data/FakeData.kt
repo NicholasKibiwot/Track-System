@@ -1,15 +1,19 @@
 package com.track.data
 
-import com.track.domain.models.GeoLocation
-import com.track.domain.models.Order
-import com.track.domain.models.OrderItem
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
-import com.track.domain.models.StaffProfile
-import com.track.domain.models.TrackingLocation
-import com.track.domain.models.TrackingRecord
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.GeoLocation
+import com.track.models.Order
+import com.track.models.OrderItem
+import com.track.models.OrderStatus
+import com.track.models.Product
+import com.track.models.StaffProfile
+import com.track.models.TrackingLocation
+import com.track.models.TrackingRecord
+import com.track.models.User
+import com.track.models.UserRole
+
+import com.track.models.ProductCategory
+import com.track.models.PaymentMethod
+import com.track.models.PaymentStatus
 
 /**
  * Used ONLY for Compose @Preview functions and UI design-time tools.
@@ -75,7 +79,7 @@ object FakeData {
             price = 450000.0,
             imageUrl = "https://yhecutmedia.com/images/heidelberg-xl75.jpg",
             stock = 5,
-            category = "billboard",
+            category = ProductCategory.INDUSTRIAL_SPECIALTY_PRINTERS,
             isActive = true,
             addedBy = "user_001",
         )
@@ -90,7 +94,7 @@ object FakeData {
                 price = 1200.0,
                 imageUrl = "",
                 stock = 25,
-                category = "TOOLS",
+                category = ProductCategory.COMMERCIAL_GRAPHICS_PRINTERS,
                 isActive = true,
                 addedBy = "user_001",
             ),
@@ -101,7 +105,7 @@ object FakeData {
                 price = 85.0,
                 imageUrl = "",
                 stock = 100,
-                category = "CONSUMABLES",
+                category = ProductCategory.ACCESSORIES,
                 isActive = true,
                 addedBy = "user_001",
             ),
@@ -125,8 +129,8 @@ object FakeData {
                     ),
                 ),
             totalAmount = 450000.0,
-            paymentMethod = "MOMO",
-            paymentStatus = "PAID",
+            paymentMethod = PaymentMethod.MOMO,
+            paymentStatus = PaymentStatus.PAID,
             orderStatus = OrderStatus.INTRANSIT,
             deliveryType = "COMPANY",
             driverId = "driver_user_001",
@@ -166,10 +170,10 @@ object FakeData {
                         ),
                     ),
                 totalAmount = 2400.0,
-                paymentMethod = "CARD",
-                paymentStatus = "PENDING",
-                orderStatus = OrderStatus.PROCESSING,
-                deliveryType = "OUTSOURCED",
+            paymentMethod = PaymentMethod.CARD,
+            paymentStatus = PaymentStatus.PENDING,
+            orderStatus = OrderStatus.PROCESSING,
+            deliveryType = "OUTSOURCED",
                 driverId = null,
                 driverName = null,
                 origin = "Nakuru Branch",

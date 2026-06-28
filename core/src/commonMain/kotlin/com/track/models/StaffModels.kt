@@ -1,4 +1,4 @@
-package com.track.domain.models
+package com.track.models
 
 import kotlinx.serialization.Serializable
 
@@ -12,4 +12,3 @@ data class StaffProfile(
     val hiredBy: String = "",
     val isActive: Boolean = true
 )
-

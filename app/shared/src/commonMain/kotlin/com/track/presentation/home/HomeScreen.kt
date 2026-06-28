@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.util.kmpViewModel
-import com.track.domain.models.Product
+import com.track.models.Product
 import com.track.presentation.customer.CustomerViewModel
 import com.track.util.isWideScreen
 
@@ -360,7 +360,7 @@ fun ProductCard(
             }
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(product.name, fontWeight = FontWeight.Bold, maxLines = 1, fontSize = 16.sp)
-                Text(product.category, color = Color.Gray, fontSize = 12.sp)
+                Text(product.category.displayName, color = Color.Gray, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),

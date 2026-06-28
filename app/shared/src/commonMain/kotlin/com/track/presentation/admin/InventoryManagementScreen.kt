@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import com.track.util.kmpViewModel
-import com.track.domain.models.Product
+import com.track.models.Product
+import com.track.models.ProductCategory
 
 @Composable
 fun InventoryManagementScreen(
@@ -47,7 +48,19 @@ fun InventoryManagementScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Text("Current Inventory", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Current Inventory", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = { viewModel.seedCatalog() },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text("Seed Catalog", fontSize = 12.sp)
+                    }
+                }
                 Spacer(Modifier.height(8.dp))
             }
             items(products) { product ->
@@ -90,7 +103,7 @@ fun InventoryAddDialog(
         },
         confirmButton = {
             Button(onClick = {
-                onConfirm(Product(id = "", name = name, price = price.toDoubleOrNull() ?: 0.0, stock = stock.toIntOrNull() ?: 0, branch = branch))
+                onConfirm(Product(id = "", name = name, price = price.toDoubleOrNull() ?: 0.0, stock = stock.toIntOrNull() ?: 0, branch = branch, category = ProductCategory.OFFICE_PRINTERS))
             }) { Text("Add") }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } }
@@ -146,7 +159,7 @@ fun InventoryItemRow(product: Product) {
                     )
                 }
                 Spacer(Modifier.height(4.dp))
-                Text(product.category.replace("_", " "), fontSize = 10.sp, color = Color.Gray)
+                Text(product.category.displayName, fontSize = 10.sp, color = Color.Gray)
             }
         }
     }

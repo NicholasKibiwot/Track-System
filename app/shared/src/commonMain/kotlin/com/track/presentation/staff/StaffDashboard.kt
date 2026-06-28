@@ -17,9 +17,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.Product
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

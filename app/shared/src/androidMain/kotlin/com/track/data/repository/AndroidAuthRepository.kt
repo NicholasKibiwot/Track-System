@@ -1,8 +1,8 @@
 package com.track.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
-import com.track.domain.models.User
-import com.track.domain.models.UserRole
+import com.track.models.User
+import com.track.models.UserRole
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton

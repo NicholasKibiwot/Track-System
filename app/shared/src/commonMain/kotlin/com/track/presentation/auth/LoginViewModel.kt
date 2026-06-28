@@ -3,7 +3,7 @@ package com.track.presentation.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.AuthRepository
-import com.track.domain.models.UserRole
+import com.track.models.UserRole
 import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

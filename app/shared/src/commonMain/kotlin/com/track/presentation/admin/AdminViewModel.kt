@@ -3,8 +3,8 @@ package com.track.presentation.admin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.Order
-import com.track.domain.models.User
+import com.track.models.Order
+import com.track.models.User
 import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

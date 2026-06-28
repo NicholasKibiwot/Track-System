@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.util.kmpViewModel
 import com.track.data.FakeData
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
+import com.track.models.Order
+import com.track.models.OrderStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

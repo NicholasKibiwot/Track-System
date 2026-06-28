@@ -17,8 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.track.data.FakeData
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.GeoLocation
 import com.track.ui.components.MockTrackMap
 import com.track.ui.theme.*
 

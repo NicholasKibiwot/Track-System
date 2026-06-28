@@ -19,8 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.PaymentStatus
 import com.track.presentation.customer.CustomerViewModel
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -70,7 +71,7 @@ fun MyOrdersScreen(
             val filteredOrders = remember(orders, selectedTab) {
                 orders.filter { order ->
                     when (selectedTab) {
-                        "Pending Payment" -> order.paymentStatus == "PENDING"
+                        "Pending Payment" -> order.paymentStatus == PaymentStatus.PENDING
                         "Delivered" -> order.orderStatus == OrderStatus.DELIVERED
                         "Processing" -> order.orderStatus == OrderStatus.PROCESSING || order.orderStatus == OrderStatus.PENDING
                         else -> true

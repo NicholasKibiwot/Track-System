@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.track.domain.models.Product
+import com.track.models.Product
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +26,7 @@ fun CategoryProductsScreen(
     val categories by viewModel.categories.collectAsState()
     
     val category = categories.find { it.id == categoryId }
-    val filteredProducts = products.filter { it.category == categoryId }
+    val filteredProducts = products.filter { it.category.name == categoryId }
 
     Scaffold(
         topBar = {

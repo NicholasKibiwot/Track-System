@@ -23,7 +23,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.track.util.kmpViewModel
-import com.track.domain.models.UserRole
+import com.track.models.UserRole
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

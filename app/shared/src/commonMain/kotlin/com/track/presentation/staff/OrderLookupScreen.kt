@@ -32,8 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.track.util.kmpViewModel
 import com.track.data.FakeData
-import com.track.domain.models.Order
-import com.track.domain.models.OrderItem
+import com.track.models.Order
+import com.track.models.OrderItem
+import com.track.models.PaymentStatus
 
 @Composable
 fun OrderLookupScreen(
@@ -247,7 +248,7 @@ fun OrderLookupResult(order: Order) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = order.paymentMethod,
+                    text = order.paymentMethod?.name ?: "N/A",
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
@@ -262,12 +263,12 @@ fun OrderLookupResult(order: Order) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = order.paymentStatus,
+                    text = order.paymentStatus.name,
                     style = MaterialTheme.typography.bodySmall,
                     color =
-                        when (order.paymentStatus.uppercase()) {
-                            "PAID" -> MaterialTheme.colorScheme.primary
-                            "PENDING" -> MaterialTheme.colorScheme.error
+                        when (order.paymentStatus) {
+                            PaymentStatus.PAID -> MaterialTheme.colorScheme.primary
+                            PaymentStatus.PENDING -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                 )

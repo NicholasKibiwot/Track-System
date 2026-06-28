@@ -3,11 +3,13 @@ package com.track.presentation.customer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.Order
-import com.track.domain.models.OrderItem
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
-import com.track.domain.models.TrackingRecord
+import com.track.models.Order
+import com.track.models.OrderItem
+import com.track.models.OrderStatus
+import com.track.models.PaymentMethod
+import com.track.models.PaymentStatus
+import com.track.models.Product
+import com.track.models.TrackingRecord
 import com.track.models.Category
 import com.track.util.CommonHiltViewModel
 import com.track.util.TrackTimestamp
@@ -280,8 +282,13 @@ open class CustomerViewModel
                             customerName = currentCustomerName,
                             items = orderItems,
                             totalAmount = total,
-                            paymentMethod = paymentMethod,
-                            paymentStatus = "PENDING",
+                            paymentMethod = when (paymentMethod.uppercase()) {
+                                "CARD" -> PaymentMethod.CARD
+                                "MOMO" -> PaymentMethod.MOMO
+                                "M-PESA" -> PaymentMethod.M_PESA
+                                else -> PaymentMethod.CASH
+                            },
+                            paymentStatus = PaymentStatus.PENDING,
                             orderStatus = OrderStatus.PENDING,
                             deliveryType = deliveryType,
                             driverId = null,

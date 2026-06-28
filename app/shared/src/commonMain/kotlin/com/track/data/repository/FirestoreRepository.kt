@@ -1,13 +1,13 @@
 package com.track.data.repository
 
-import com.track.domain.models.GeoLocation
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
-import com.track.domain.models.StaffProfile
-import com.track.domain.models.TrackingLocation
-import com.track.domain.models.TrackingRecord
-import com.track.domain.models.User
+import com.track.models.GeoLocation
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.Product
+import com.track.models.StaffProfile
+import com.track.models.TrackingLocation
+import com.track.models.TrackingRecord
+import com.track.models.User
 import com.track.models.Category
 import kotlinx.coroutines.flow.Flow
 
@@ -31,6 +31,7 @@ interface FirestoreRepository {
     suspend fun updateUserOnlineStatus(userId: String, isOnline: Boolean)
     suspend fun updateStaffActiveStatus(staffId: String, isActive: Boolean)
     suspend fun updateProductStock(productId: String, newStock: Int)
+    suspend fun seedProducts(products: List<Product>)
     suspend fun getOrderById(orderId: String): Order?
     suspend fun getUser(userId: String): User?
     suspend fun updateUserProfile(userId: String, name: String, phone: String, shippingAddress: String, dob: String = "", country: String = "")

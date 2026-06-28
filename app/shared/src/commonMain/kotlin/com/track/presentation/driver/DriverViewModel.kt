@@ -4,10 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
 import com.track.data.TrackingStateHolder
-import com.track.domain.models.GeoLocation
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.TrackingLocation
+import com.track.models.GeoLocation
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.TrackingLocation
 import com.track.util.CommonHiltViewModel
 import com.track.util.TrackTimestamp
 import com.track.util.getCurrentTimeMillis

@@ -2,8 +2,8 @@ package com.track.presentation.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
+import com.track.models.Order
+import com.track.models.OrderStatus
 import com.track.data.repository.FirestoreRepository
 import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

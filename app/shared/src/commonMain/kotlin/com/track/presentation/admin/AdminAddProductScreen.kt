@@ -35,15 +35,35 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.track.util.kmpViewModel
-import com.track.domain.models.Product
-import com.track.presentation.admin.SuperAdminViewModel
+import com.track.models.Product
+import com.track.models.ProductCategory
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminAddProductScreen(
     viewModel: SuperAdminViewModel = kmpViewModel(),
     onBackClick: () -> Unit = {},
     onProductAdded: () -> Unit = {},
+) {
+    val isLoading by viewModel.isLoading.collectAsState()
+
+    // Refactored to separate state from content to allow Preview rendering
+    AdminAddProductContent(
+        isLoading = isLoading,
+        onBackClick = onBackClick,
+        onSaveProduct = { product ->
+            viewModel.createProduct(product) {
+                onProductAdded()
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdminAddProductContent(
+    isLoading: Boolean,
+    onBackClick: () -> Unit,
+    onSaveProduct: (Product) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -53,8 +73,6 @@ fun AdminAddProductScreen(
     var imageUrl by remember { mutableStateOf("") }
     var sizes by remember { mutableStateOf("") } // comma separated
     var colors by remember { mutableStateOf("") } // comma separated Hex
-
-    val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
         topBar = {
@@ -146,16 +164,14 @@ fun AdminAddProductScreen(
                             name = name,
                             description = description,
                             price = price.toDoubleOrNull() ?: 0.0,
-                            category = category,
+                            category = ProductCategory.entries.find { it.name == category || it.displayName == category } ?: ProductCategory.OFFICE_PRINTERS,
                             stock = stock.toIntOrNull() ?: 0,
                             imageUrl = imageUrl,
                             sizes = sizes.split(",").map { it.trim() }.filter { it.isNotEmpty() },
                             colors = colors.split(",").map { it.trim() }.filter { it.isNotEmpty() },
                             rating = 4.5, // Default for new items
                         )
-                    viewModel.createProduct(newProduct) {
-                        onProductAdded()
-                    }
+                    onSaveProduct(newProduct)
                 },
                 modifier =
                     Modifier
@@ -177,7 +193,11 @@ fun AdminAddProductScreen(
 @Composable
 fun AdminAddProductScreenPreview() {
     MaterialTheme {
-        AdminAddProductScreen()
+        // Calling the Content composable directly in Preview to avoid ViewModel instantiation issues
+        AdminAddProductContent(
+            isLoading = false,
+            onBackClick = {},
+            onSaveProduct = {},
+        )
     }
 }
-

@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.track.util.kmpViewModel
-import com.track.domain.models.Product
+import com.track.models.Product
 import com.track.presentation.customer.CustomerViewModel
 import com.track.util.isWideScreen
 
@@ -108,15 +108,15 @@ fun ModernHomeScreen(
                 Spacer(modifier = Modifier.height(32.dp))
                 
                 // Recommendation Section
-                ModernProductRow("Featured Office Printers", products.filter { it.category == "OFFICE_PRINTERS" }, onNavigateToProductDetails)
+                ModernProductRow("Featured Office Printers", products.filter { it.category.name == "OFFICE_PRINTERS" }, onNavigateToProductDetails)
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
-                ModernProductRow("POS & Retail Solutions", products.filter { it.category == "POS_RETAIL_PRINTERS" }, onNavigateToProductDetails)
+                ModernProductRow("POS & Retail Solutions", products.filter { it.category.name == "POS_RETAIL_PRINTERS" }, onNavigateToProductDetails)
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                ModernProductRow("Professional Accessories", products.filter { it.category == "ACCESSORIES" }, onNavigateToProductDetails)
+                ModernProductRow("Professional Accessories", products.filter { it.category.name == "ACCESSORIES" }, onNavigateToProductDetails)
 
                 Spacer(modifier = Modifier.height(48.dp))
             }

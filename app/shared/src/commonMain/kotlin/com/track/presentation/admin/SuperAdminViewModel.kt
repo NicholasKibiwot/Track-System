@@ -3,11 +3,13 @@ package com.track.presentation.admin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
-import com.track.domain.models.StaffProfile
-import com.track.domain.models.User
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.Product
+import com.track.models.StaffProfile
+import com.track.models.User
+import com.track.models.UserRole
+import com.track.data.SeedData
 import com.track.util.CommonHiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,7 +61,7 @@ open class SuperAdminViewModel
         val totalOrders: Int get() = _orders.value.size
         val totalRevenue: Double get() = _orders.value.sumOf { it.totalAmount }
         val avgOrderValue: Double get() = if (totalOrders > 0) totalRevenue / totalOrders else 0.0
-        val customerCount: Int get() = _allUsers.value.count { it.role == "customer" }
+        val customerCount: Int get() = _allUsers.value.count { it.role == UserRole.CUSTOMER }
         val lowStockCount: Int get() = _products.value.count { it.stock < 5 }
 
         val pendingOrders: Int get() =
@@ -245,5 +247,18 @@ open class SuperAdminViewModel
         fun getOrderById(orderId: String): Order? = _orders.value.find { it.id == orderId }
 
         fun getUserById(userId: String): User? = _allUsers.value.find { it.id == userId }
+
+        fun seedCatalog() {
+            viewModelScope.launch {
+                _isLoading.value = true
+                try {
+                    repository.seedProducts(SeedData.products)
+                    _isLoading.value = false
+                } catch (e: Exception) {
+                    _errorMessage.value = "Failed to seed catalog: ${e.message}"
+                    _isLoading.value = false
+                }
+            }
+        }
     }
 

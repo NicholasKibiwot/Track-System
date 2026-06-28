@@ -24,7 +24,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.track.domain.models.UserRole
+import com.track.models.UserRole
 import com.track.presentation.auth.AuthViewModel
 import com.track.util.isWideScreen
 

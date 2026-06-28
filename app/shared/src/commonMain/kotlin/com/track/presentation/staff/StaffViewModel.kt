@@ -3,9 +3,9 @@ package com.track.presentation.staff
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.track.data.repository.FirestoreRepository
-import com.track.domain.models.Order
-import com.track.domain.models.OrderStatus
-import com.track.domain.models.Product
+import com.track.models.Order
+import com.track.models.OrderStatus
+import com.track.models.Product
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
