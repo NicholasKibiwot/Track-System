@@ -57,6 +57,11 @@ open class SuperAdminViewModel
         // ── Dashboard stats ───────────────────────────────────────────────────────
 
         val totalOrders: Int get() = _orders.value.size
+        val totalRevenue: Double get() = _orders.value.sumOf { it.totalAmount }
+        val avgOrderValue: Double get() = if (totalOrders > 0) totalRevenue / totalOrders else 0.0
+        val customerCount: Int get() = _allUsers.value.count { it.role == "customer" }
+        val lowStockCount: Int get() = _products.value.count { it.stock < 5 }
+
         val pendingOrders: Int get() =
             _orders.value.count {
                 it.orderStatus == OrderStatus.PENDING || it.orderStatus == OrderStatus.PROCESSING
