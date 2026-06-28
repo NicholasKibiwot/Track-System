@@ -1,0 +1,37 @@
+[
+  {
+    "id": "img_hp_4103_main",
+    "entityType": "PRODUCT",
+    "entityId": "prd_hp_ljp_4103",
+    "category": "OFFICE_PRINTERS",
+    "type": "PRIMARY",
+    "alt": "HP LaserJet Pro 4103fdw Multifunction Printer",
+    "sourceType": "MANUFACTURER",
+    "sourceName": "HP",
+    "storage": {
+      "originalPath": "product-images/printers/office/original/hp-4103.jpg",
+      "webpPath": "product-images/printers/office/webp/hp-4103.webp",
+      "thumbPath": "product-images/printers/office/thumb/hp-4103.webp"
+    },
+    "status": "APPROVED",
+    "createdAt": 1719572400000
+  },
+  {
+    "id": "img_mimaki_ujv200_main",
+    "entityType": "PRODUCT",
+    "entityId": "prd_mimaki_ujv200",
+    "category": "UV_PRINTER",
+    "type": "PRIMARY",
+    "alt": "Mimaki UJV200 Series UV LED roll to roll printer",
+    "sourceType": "MANUFACTURER",
+    "sourceName": "Mimaki USA",
+    "sourcePage": "https://www.mimakiusa.com/products/",
+    "storage": {
+      "originalPath": "product-images/printers/uv/original/mimaki-ujv200.jpg",
+      "webpPath": "product-images/printers/uv/webp/mimaki-ujv200.webp",
+      "thumbPath": "product-images/printers/uv/thumb/mimaki-ujv200.webp"
+    },
+    "status": "APPROVED",
+    "createdAt": 1719572400000
+  }
+]

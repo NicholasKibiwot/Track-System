@@ -1,0 +1,38 @@
+[
+  {
+    "id": "OFFICE_PRINTERS",
+    "name": "Office Printers",
+    "description": "Printers for business and administrative tasks.",
+    "printerTypes": ["LASER", "INKJET", "MULTIFUNCTION"]
+  },
+  {
+    "id": "POS_RETAIL_PRINTERS",
+    "name": "POS & Retail Printers",
+    "description": "Receipt and label printers for retail and hospitality.",
+    "printerTypes": ["THERMAL", "BARCODE"]
+  },
+  {
+    "id": "COMMERCIAL_GRAPHICS_PRINTERS",
+    "name": "Commercial & Graphics Printers",
+    "description": "Large format and production printers for professional use.",
+    "printerTypes": ["LARGE_FORMAT"]
+  },
+  {
+    "id": "INDUSTRIAL_SPECIALTY_PRINTERS",
+    "name": "Industrial & Specialty Printers",
+    "description": "UV, DTF, Sublimation and 3D printers.",
+    "printerTypes": ["UV", "DTF", "SUBLIMATION", "THREE_D"]
+  },
+  {
+    "id": "ACCESSORIES",
+    "name": "Accessories",
+    "description": "Toners, ink, and spare parts.",
+    "printerTypes": []
+  },
+  {
+    "id": "REPAIRS_SERVICES",
+    "name": "Repairs & Services",
+    "description": "Maintenance and repair services for all printers.",
+    "printerTypes": []
+  }
+]

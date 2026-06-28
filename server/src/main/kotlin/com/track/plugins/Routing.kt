@@ -20,5 +20,6 @@ fun Application.configureRouting() {
         vehicleRoutes()
         packageRoutes()
         checkInRoutes()
+        seedRoutes()
     }
 }
