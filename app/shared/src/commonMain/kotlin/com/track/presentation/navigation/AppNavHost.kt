@@ -171,25 +171,11 @@ private fun NavGraphBuilder.addAdminRoutes(
     adminViewModel: SuperAdminViewModel,
 ) {
     composable(Screen.AdminDashboard.route) {
-        if (getPlatform().isWeb) {
-            WebAdminDashboard(
-                viewModel = adminViewModel,
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.AdminDashboard.route) { inclusive = true }
-                    }
-                }
-            )
-        } else {
-            AdminDashboard(
-                viewModel = adminViewModel,
-                onLogout = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(Screen.AdminDashboard.route) { inclusive = true }
-                    }
-                }
-            )
-        }
+        val vm = kmpViewModel<SuperAdminViewModel>()
+        SuperAdminDashboard(
+            viewModel = vm,
+            onLogout = { navController.navigate(Screen.Login.route) }
+        )
     }
 
     composable(Screen.AdminAddProduct.route) {

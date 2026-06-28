@@ -7,7 +7,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SuperAdminDashboard() {
+fun SuperAdminDashboard(
+    viewModel: SuperAdminViewModel,
+    onLogout: () -> Unit = {}
+) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Orders & Payments", "Staff Management", "Inventory")
 
