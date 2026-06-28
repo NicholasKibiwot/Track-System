@@ -22,5 +22,7 @@ class JvmGoogleAuthManager(
     }
 
     override fun signOut() {
+        // Sign-out logic for Desktop is not yet implemented.
+        onError("Google Sign-Out is not yet implemented for Desktop.")
     }
 }

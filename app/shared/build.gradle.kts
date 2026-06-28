@@ -77,8 +77,7 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(compose.materialIconsExtended)
-            implementation("javax.inject:javax.inject:1")
+            implementation(libs.javaxInject)
             implementation(libs.coil.compose)
         }
         commonTest.dependencies {

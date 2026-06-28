@@ -22,5 +22,7 @@ class WasmGoogleAuthManager(
     }
 
     override fun signOut() {
+        // Sign-out logic for Wasm is not yet implemented.
+        onError("Google Sign-Out is not yet implemented for Wasm.")
     }
 }

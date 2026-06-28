@@ -22,5 +22,7 @@ class JsGoogleAuthManager(
     }
 
     override fun signOut() {
+        // Sign-out logic for Web is not yet implemented.
+        onError("Google Sign-Out is not yet implemented for Web.")
     }
 }

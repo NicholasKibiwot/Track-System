@@ -41,21 +41,11 @@ fun StaffNavHost(
     driverViewModel: AppDriverViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-    val currentUser by authViewModel.currentUser.collectAsState()
     
     val onLogout = {
         // Redirect back to debug portal instead of real login
         navController.navigate("temp_login") {
             popUpTo(0) { inclusive = true }
-        }
-    }
-
-    // Auto-logout simulation at Close of Business (e.g., 6 PM)
-    LaunchedEffect(currentUser) {
-        val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        if ((hour >= 18 || hour < 8) && currentUser != null) {
-            // authViewModel.logout()
-            // onLogout()
         }
     }
 

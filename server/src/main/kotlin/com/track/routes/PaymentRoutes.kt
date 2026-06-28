@@ -26,7 +26,7 @@ fun Route.paymentRoutes() {
                 
                 // 1. Log payment
                 val payment = Payment(
-                    id = UUID_JVM(),
+                    id = generateUuid(),
                     orderId = orderId,
                     amount = (body["amount"] as? Number)?.toDouble() ?: 0.0,
                     status = paymentStatus,
@@ -49,4 +49,4 @@ fun Route.paymentRoutes() {
     }
 }
 
-private fun UUID_JVM() = java.util.UUID.randomUUID().toString()
+private fun generateUuid() = java.util.UUID.randomUUID().toString()

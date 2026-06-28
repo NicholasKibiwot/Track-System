@@ -30,11 +30,11 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
 
     // Firebase Admin SDK  (server-side only — uses Java/JVM)
-    implementation("com.google.firebase:firebase-admin:9.3.0")
+    implementation(libs.firebase.admin)
 
     // Kotlin serialization & coroutines
     implementation(libs.kotlinx.serialization.json)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
+    implementation(libs.kotlinx.coroutines.core)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.testJunit)

@@ -12,12 +12,12 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
+interface RepositoryModule {
     @Binds
     @Singleton
-    abstract fun bindAuthRepository(impl: AndroidAuthRepository): AuthRepository
+    fun bindAuthRepository(impl: AndroidAuthRepository): AuthRepository
 
     @Binds
     @Singleton
-    abstract fun bindFirestoreRepository(impl: AndroidFirestoreRepository): FirestoreRepository
+    fun bindFirestoreRepository(impl: AndroidFirestoreRepository): FirestoreRepository
 }
