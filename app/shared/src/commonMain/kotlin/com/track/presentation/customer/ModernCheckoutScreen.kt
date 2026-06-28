@@ -9,10 +9,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.track.util.isWideScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,15 +99,27 @@ fun ModernCheckoutScreen(
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             cartItems.forEach { item ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(Modifier.size(50.dp).background(Color(0xFFF5F5F5)), contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.Print, null, tint = Color.LightGray)
-                                    }
+                                    val displayImageUrl = item.product.images.firstOrNull()?.storage?.webpUrl 
+                                        ?: item.product.images.firstOrNull()?.storage?.webpPath 
+                                        ?: item.product.imageUrl
+
+                                    SubcomposeAsyncImage(
+                                        model = displayImageUrl,
+                                        contentDescription = item.product.name,
+                                        modifier = Modifier.size(50.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFFF5F5F5)),
+                                        contentScale = ContentScale.Crop,
+                                        error = {
+                                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                                Icon(Icons.Default.Print, null, tint = Color.LightGray)
+                                            }
+                                        }
+                                    )
                                     Spacer(Modifier.width(12.dp))
                                     Column(Modifier.weight(1f)) {
                                         Text(item.product.name, fontSize = 14.sp, fontWeight = FontWeight.Medium, maxLines = 1)
                                         Text("Qty: ${item.quantity}", fontSize = 12.sp, color = Color.Gray)
                                     }
-                                    Text("$$${item.product.price * item.quantity}", fontWeight = FontWeight.Bold)
+                                    Text("KES ${item.product.price * item.quantity}", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -130,17 +146,17 @@ fun ModernCheckoutScreen(
                     Column(Modifier.padding(16.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Order Total:", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                            Text("$$totalAmount", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB12704))
+                            Text("KES $totalAmount", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB12704))
                         }
                         Spacer(Modifier.height(12.dp))
                         Button(
                             onClick = {
-                                viewModel.placeOrder(paymentMethod, "Global", "$address, $city", "EXPRESS", onOrderSuccess)
+                                viewModel.placeOrder(paymentMethod, "Global Distribution Center", "$address, $city ($phone)", "EXPRESS", onOrderSuccess)
                             },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEB123)),
                             shape = RoundedCornerShape(8.dp),
-                            enabled = !isLoading && address.isNotBlank()
+                            enabled = !isLoading && address.isNotBlank() && phone.isNotBlank()
                         ) {
                             Text("Place Your Order", color = Color.Black, fontWeight = FontWeight.Bold)
                         }
@@ -195,7 +211,7 @@ fun OrderSummarySidebar(total: Double, loading: Boolean, ready: Boolean, onPlace
             }
             
             Text(
-                "By placing your order, you agree to Printer Pro's privacy notice and conditions of use.",
+                "By placing your order, you agree to YheCutMedia's privacy notice and conditions of use.",
                 fontSize = 11.sp, color = Color.Gray, modifier = Modifier.padding(vertical = 12.dp)
             )
             
@@ -203,16 +219,16 @@ fun OrderSummarySidebar(total: Double, loading: Boolean, ready: Boolean, onPlace
             
             Text("Order Summary", fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 12.dp))
             
-            SummaryRow("Items:", "$$total")
-            SummaryRow("Shipping & handling:", "$0.00")
-            SummaryRow("Total before tax:", "$$total")
-            SummaryRow("Estimated tax:", "$0.00")
+            SummaryRow("Items:", "KES $total")
+            SummaryRow("Shipping & handling:", "KES 0.00")
+            SummaryRow("Total before tax:", "KES $total")
+            SummaryRow("Estimated tax:", "KES 0.00")
             
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Order total:", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB12704))
-                Text("$$total", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB12704))
+                Text("KES $total", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB12704))
             }
         }
     }

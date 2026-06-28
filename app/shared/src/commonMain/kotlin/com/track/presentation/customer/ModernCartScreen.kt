@@ -13,10 +13,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
 import com.track.util.isWideScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,7 +109,7 @@ fun WideCartLayout(
                 }
                 
                 Text(
-                    "Subtotal (${items.sumOf { it.quantity }} items): $$total",
+                    "Subtotal (${items.sumOf { it.quantity }} items): KES $total",
                     modifier = Modifier.align(Alignment.End),
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -125,7 +128,7 @@ fun WideCartLayout(
                     }
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Subtotal (${items.sumOf { it.quantity }} items): $$total",
+                        "Subtotal (${items.sumOf { it.quantity }} items): KES $total",
                         fontSize = 18.sp
                     )
                     Spacer(Modifier.height(16.dp))
@@ -163,7 +166,7 @@ fun MobileCartLayout(
             Column(Modifier.padding(16.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Subtotal", fontSize = 18.sp)
-                    Text("$$total", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("KES $total", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(12.dp))
                 Button(
@@ -183,12 +186,21 @@ fun MobileCartLayout(
 fun ModernCartItemRow(item: CartItem, viewModel: CustomerViewModel) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         // Image
-        Box(
+        val displayImageUrl = item.product.images.firstOrNull()?.storage?.webpUrl 
+            ?: item.product.images.firstOrNull()?.storage?.webpPath 
+            ?: item.product.imageUrl
+
+        SubcomposeAsyncImage(
+            model = displayImageUrl,
+            contentDescription = item.product.name,
             modifier = Modifier.size(120.dp).clip(RoundedCornerShape(4.dp)).background(Color(0xFFF8F8F8)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Print, null, modifier = Modifier.size(48.dp), tint = Color.LightGray)
-        }
+            contentScale = ContentScale.Crop,
+            error = {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.Print, null, modifier = Modifier.size(48.dp), tint = Color.LightGray)
+                }
+            }
+        )
         
         Spacer(Modifier.width(16.dp))
         
@@ -207,11 +219,11 @@ fun ModernCartItemRow(item: CartItem, viewModel: CustomerViewModel) {
                     color = Color(0xFFF0F2F2)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                        IconButton(onClick = { viewModel.removeFromCart(item.product.id) }, modifier = Modifier.size(24.dp)) {
+                        IconButton(onClick = { viewModel.decreaseQuantity(item.product.id) }, modifier = Modifier.size(24.dp)) {
                             Icon(Icons.Default.Remove, null, modifier = Modifier.size(16.dp))
                         }
                         Text("Qty: ${item.quantity}", modifier = Modifier.padding(horizontal = 8.dp), fontSize = 13.sp)
-                        IconButton(onClick = { viewModel.addToCart(item.product) }, modifier = Modifier.size(24.dp)) {
+                        IconButton(onClick = { viewModel.increaseQuantity(item.product.id) }, modifier = Modifier.size(24.dp)) {
                             Icon(Icons.Default.Add, null, modifier = Modifier.size(16.dp))
                         }
                     }
@@ -223,7 +235,7 @@ fun ModernCartItemRow(item: CartItem, viewModel: CustomerViewModel) {
                     "Delete", 
                     color = Color(0xFF007185), 
                     fontSize = 12.sp, 
-                    modifier = Modifier.clickable { /* Logic to remove completely */ }
+                    modifier = Modifier.clickable { viewModel.removeFromCart(item.product.id) }
                 )
                 
                 Spacer(Modifier.width(16.dp))
@@ -237,6 +249,6 @@ fun ModernCartItemRow(item: CartItem, viewModel: CustomerViewModel) {
             }
         }
         
-        Text("$$${item.product.price}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text("KES ${item.product.price}", fontWeight = FontWeight.Bold, fontSize = 18.sp)
     }
 }
